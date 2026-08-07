@@ -102,13 +102,16 @@ const FAQ = [
 ];
 
 function useCountdown(target: Date) {
-  const [now, setNow] = useState(() => new Date());
+  // Start from null so SSR and first client render match; tick after mount.
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
-  const diff = Math.max(0, target.getTime() - now.getTime());
+  const diff = now ? Math.max(0, target.getTime() - now.getTime()) : 0;
   return {
+    ready: now !== null,
     days: Math.floor(diff / 86400000),
     hours: Math.floor((diff / 3600000) % 24),
     minutes: Math.floor((diff / 60000) % 60),
