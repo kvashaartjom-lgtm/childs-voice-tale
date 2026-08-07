@@ -102,13 +102,16 @@ const FAQ = [
 ];
 
 function useCountdown(target: Date) {
-  const [now, setNow] = useState(() => new Date());
+  // Start from null so SSR and first client render match; tick after mount.
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
-  const diff = Math.max(0, target.getTime() - now.getTime());
+  const diff = now ? Math.max(0, target.getTime() - now.getTime()) : 0;
   return {
+    ready: now !== null,
     days: Math.floor(diff / 86400000),
     hours: Math.floor((diff / 3600000) % 24),
     minutes: Math.floor((diff / 60000) % 60),
@@ -125,7 +128,7 @@ function LandingPage() {
       <SiteHeader />
 
       {/* Hero */}
-      <section className="night-sky relative overflow-hidden">
+      <section className="night-sky starfield relative overflow-hidden">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 md:grid-cols-2 md:py-28">
           <div className="animate-reveal">
             <span className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5 text-xs text-gold">
@@ -172,14 +175,22 @@ function LandingPage() {
             <Gift className="size-5 text-gold" />
             Op tijd voor Sinterklaas 🎁 — bestel vóór 20 november
           </p>
-          <div className="flex gap-2 font-mono text-sm text-gold">
+          <div
+            className={`flex gap-2 font-mono text-sm text-gold transition-opacity ${countdown.ready ? "opacity-100" : "opacity-0"}`}
+          >
+
             {[
               [countdown.days, "d"],
               [countdown.hours, "u"],
               [countdown.minutes, "m"],
               [countdown.seconds, "s"],
             ].map(([value, unit]) => (
-              <span key={unit as string} className="rounded-xl bg-background/50 px-3 py-1.5">
+              <span
+                key={unit as string}
+                className="rounded-xl bg-background/50 px-3 py-1.5 tabular-nums"
+                suppressHydrationWarning
+              >
+
                 {String(value).padStart(2, "0")}
                 {unit}
               </span>
@@ -340,7 +351,7 @@ function LandingPage() {
                 </li>
               ))}
             </ul>
-            <Button asChild size="lg" className="mt-9 h-13 w-full rounded-full text-base">
+            <Button asChild size="lg" className="mt-9 h-13 w-full rounded-full text-base glow-gold">
               <Link to="/bestellen">Bestel nu</Link>
             </Button>
           </div>

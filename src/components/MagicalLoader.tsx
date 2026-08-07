@@ -24,7 +24,7 @@ export function MagicalLoader({ visible }: { visible: boolean }) {
   if (!visible) return null;
 
   return (
-    <div className="night-sky fixed inset-0 z-50 flex flex-col items-center justify-center bg-background px-6 text-center">
+    <div className="night-sky starfield fixed inset-0 z-50 flex flex-col items-center justify-center bg-background px-6 text-center">
       <div className="relative">
         <div className="absolute inset-0 rounded-full bg-gold/25 blur-3xl animate-pulse-glow" />
         <Sparkles className="relative size-16 text-gold animate-float" />
