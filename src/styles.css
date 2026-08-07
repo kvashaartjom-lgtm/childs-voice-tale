@@ -156,6 +156,89 @@
   box-shadow: var(--shadow-glow-gold);
 }
 
+@utility glow-gold-soft {
+  box-shadow: 0 0 28px -10px oklch(0.702 0.121 66.5 / 45%);
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate3d(0, -6px, 0) scale(1.06);
+  }
+}
+
+@keyframes drift {
+  from {
+    background-position:
+      0 0,
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      140px -90px,
+      -120px 80px,
+      90px 60px;
+  }
+}
+
+/* Layered star particles for hero + loading screens. */
+@utility starfield {
+  position: relative;
+  isolation: isolate;
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  &::before {
+    background-image: radial-gradient(
+        1.6px 1.6px at 15% 25%,
+        oklch(0.936 0.033 92.5 / 70%),
+        transparent 60%
+      ),
+      radial-gradient(1.3px 1.3px at 42% 12%, oklch(0.702 0.121 66.5 / 85%), transparent 60%),
+      radial-gradient(1.1px 1.1px at 68% 34%, oklch(0.936 0.033 92.5 / 55%), transparent 60%),
+      radial-gradient(1.8px 1.8px at 84% 18%, oklch(0.702 0.121 66.5 / 70%), transparent 60%),
+      radial-gradient(1.2px 1.2px at 27% 72%, oklch(0.936 0.033 92.5 / 45%), transparent 60%),
+      radial-gradient(1.5px 1.5px at 58% 82%, oklch(0.596 0.146 356 / 60%), transparent 60%),
+      radial-gradient(1.1px 1.1px at 91% 66%, oklch(0.936 0.033 92.5 / 50%), transparent 60%);
+    animation: twinkle 5.5s ease-in-out infinite;
+  }
+  &::after {
+    background-image: radial-gradient(
+        1px 1px at 8% 55%,
+        oklch(0.936 0.033 92.5 / 40%),
+        transparent 60%
+      ),
+      radial-gradient(1.4px 1.4px at 35% 44%, oklch(0.702 0.121 66.5 / 55%), transparent 60%),
+      radial-gradient(1px 1px at 74% 58%, oklch(0.936 0.033 92.5 / 35%), transparent 60%),
+      radial-gradient(1.2px 1.2px at 96% 38%, oklch(0.596 0.146 356 / 45%), transparent 60%);
+    background-size:
+      420px 420px,
+      520px 520px,
+      620px 620px;
+    animation:
+      twinkle 8s ease-in-out infinite 1.2s,
+      drift 46s linear infinite alternate;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starfield::before,
+  .starfield::after {
+    animation: none;
+  }
+}
+
 @utility glow-rose {
   box-shadow: var(--shadow-glow-rose);
 }
