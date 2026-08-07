@@ -175,7 +175,10 @@ function LandingPage() {
             <Gift className="size-5 text-gold" />
             Op tijd voor Sinterklaas 🎁 — bestel vóór 20 november
           </p>
-          <div className="flex gap-2 font-mono text-sm text-gold">
+          <div
+            className={`flex gap-2 font-mono text-sm text-gold transition-opacity ${countdown.ready ? "opacity-100" : "opacity-0"}`}
+          >
+
             {[
               [countdown.days, "d"],
               [countdown.hours, "u"],
