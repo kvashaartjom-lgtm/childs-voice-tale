@@ -351,7 +351,7 @@ function LandingPage() {
                 </li>
               ))}
             </ul>
-            <Button asChild size="lg" className="mt-9 h-13 w-full rounded-full text-base">
+            <Button asChild size="lg" className="mt-9 h-13 w-full rounded-full text-base glow-gold">
               <Link to="/bestellen">Bestel nu</Link>
             </Button>
           </div>
