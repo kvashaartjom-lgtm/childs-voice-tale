@@ -182,7 +182,12 @@ function LandingPage() {
               [countdown.minutes, "m"],
               [countdown.seconds, "s"],
             ].map(([value, unit]) => (
-              <span key={unit as string} className="rounded-xl bg-background/50 px-3 py-1.5">
+              <span
+                key={unit as string}
+                className="rounded-xl bg-background/50 px-3 py-1.5 tabular-nums"
+                suppressHydrationWarning
+              >
+
                 {String(value).padStart(2, "0")}
                 {unit}
               </span>
