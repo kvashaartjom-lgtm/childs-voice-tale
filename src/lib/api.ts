@@ -119,11 +119,15 @@ const POOL = [aquarel, sprookje, grandparent, tekenfilm, realistisch];
 export function mockIllustration(styleId: IllustrationStyleId | null, index: number) {
   if (styleId) {
     const primary = STYLE_IMAGES[styleId];
-    return index % 2 === 0 ? primary : POOL[index % POOL.length];
+    return index % 2 === 0 ? primary : POOL[index % POOL.length]!;
   }
-  return POOL[index % POOL.length];
+  return POOL[index % POOL.length]!;
 }
 
 export function illustrationVariants(index: number) {
-  return [POOL[index % POOL.length], POOL[(index + 1) % POOL.length], POOL[(index + 3) % POOL.length]];
+  return [
+    POOL[index % POOL.length]!,
+    POOL[(index + 1) % POOL.length]!,
+    POOL[(index + 3) % POOL.length]!,
+  ];
 }
