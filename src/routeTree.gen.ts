@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BestellenRouteImport } from './routes/bestellen'
 import { Route as PrivacybeleidRouteImport } from './routes/privacybeleid'
+import { Route as VoorbeeldRouteImport } from './routes/voorbeeld'
 import { Route as VoorwaardenRouteImport } from './routes/voorwaarden'
 
 const IndexRoute = IndexRouteImport.update({
@@ -18,9 +20,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BestellenRoute = BestellenRouteImport.update({
+  id: '/bestellen',
+  path: '/bestellen',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacybeleidRoute = PrivacybeleidRouteImport.update({
   id: '/privacybeleid',
   path: '/privacybeleid',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VoorbeeldRoute = VoorbeeldRouteImport.update({
+  id: '/voorbeeld',
+  path: '/voorbeeld',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VoorwaardenRoute = VoorwaardenRouteImport.update({
@@ -31,31 +43,46 @@ const VoorwaardenRoute = VoorwaardenRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bestellen': typeof BestellenRoute
   '/privacybeleid': typeof PrivacybeleidRoute
+  '/voorbeeld': typeof VoorbeeldRoute
   '/voorwaarden': typeof VoorwaardenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bestellen': typeof BestellenRoute
   '/privacybeleid': typeof PrivacybeleidRoute
+  '/voorbeeld': typeof VoorbeeldRoute
   '/voorwaarden': typeof VoorwaardenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bestellen': typeof BestellenRoute
   '/privacybeleid': typeof PrivacybeleidRoute
+  '/voorbeeld': typeof VoorbeeldRoute
   '/voorwaarden': typeof VoorwaardenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/privacybeleid' | '/voorwaarden'
+  fullPaths:
+    '/' | '/bestellen' | '/privacybeleid' | '/voorbeeld' | '/voorwaarden'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/privacybeleid' | '/voorwaarden'
-  id: '__root__' | '/' | '/privacybeleid' | '/voorwaarden'
+  to: '/' | '/bestellen' | '/privacybeleid' | '/voorbeeld' | '/voorwaarden'
+  id:
+    | '__root__'
+    | '/'
+    | '/bestellen'
+    | '/privacybeleid'
+    | '/voorbeeld'
+    | '/voorwaarden'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BestellenRoute: typeof BestellenRoute
   PrivacybeleidRoute: typeof PrivacybeleidRoute
+  VoorbeeldRoute: typeof VoorbeeldRoute
   VoorwaardenRoute: typeof VoorwaardenRoute
 }
 
@@ -68,11 +95,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bestellen': {
+      id: '/bestellen'
+      path: '/bestellen'
+      fullPath: '/bestellen'
+      preLoaderRoute: typeof BestellenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacybeleid': {
       id: '/privacybeleid'
       path: '/privacybeleid'
       fullPath: '/privacybeleid'
       preLoaderRoute: typeof PrivacybeleidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/voorbeeld': {
+      id: '/voorbeeld'
+      path: '/voorbeeld'
+      fullPath: '/voorbeeld'
+      preLoaderRoute: typeof VoorbeeldRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/voorwaarden': {
@@ -87,7 +128,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BestellenRoute: BestellenRoute,
   PrivacybeleidRoute: PrivacybeleidRoute,
+  VoorbeeldRoute: VoorbeeldRoute,
   VoorwaardenRoute: VoorwaardenRoute,
 }
 export const routeTree = rootRouteImport
