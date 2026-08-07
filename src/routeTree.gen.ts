@@ -10,33 +10,102 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AfrekenenRouteImport } from './routes/afrekenen'
+import { Route as BestellenRouteImport } from './routes/bestellen'
+import { Route as PrivacybeleidRouteImport } from './routes/privacybeleid'
+import { Route as VoorbeeldRouteImport } from './routes/voorbeeld'
+import { Route as VoorwaardenRouteImport } from './routes/voorwaarden'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AfrekenenRoute = AfrekenenRouteImport.update({
+  id: '/afrekenen',
+  path: '/afrekenen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BestellenRoute = BestellenRouteImport.update({
+  id: '/bestellen',
+  path: '/bestellen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacybeleidRoute = PrivacybeleidRouteImport.update({
+  id: '/privacybeleid',
+  path: '/privacybeleid',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VoorbeeldRoute = VoorbeeldRouteImport.update({
+  id: '/voorbeeld',
+  path: '/voorbeeld',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VoorwaardenRoute = VoorwaardenRouteImport.update({
+  id: '/voorwaarden',
+  path: '/voorwaarden',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/afrekenen': typeof AfrekenenRoute
+  '/bestellen': typeof BestellenRoute
+  '/privacybeleid': typeof PrivacybeleidRoute
+  '/voorbeeld': typeof VoorbeeldRoute
+  '/voorwaarden': typeof VoorwaardenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/afrekenen': typeof AfrekenenRoute
+  '/bestellen': typeof BestellenRoute
+  '/privacybeleid': typeof PrivacybeleidRoute
+  '/voorbeeld': typeof VoorbeeldRoute
+  '/voorwaarden': typeof VoorwaardenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/afrekenen': typeof AfrekenenRoute
+  '/bestellen': typeof BestellenRoute
+  '/privacybeleid': typeof PrivacybeleidRoute
+  '/voorbeeld': typeof VoorbeeldRoute
+  '/voorwaarden': typeof VoorwaardenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/afrekenen'
+    | '/bestellen'
+    | '/privacybeleid'
+    | '/voorbeeld'
+    | '/voorwaarden'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/afrekenen'
+    | '/bestellen'
+    | '/privacybeleid'
+    | '/voorbeeld'
+    | '/voorwaarden'
+  id:
+    | '__root__'
+    | '/'
+    | '/afrekenen'
+    | '/bestellen'
+    | '/privacybeleid'
+    | '/voorbeeld'
+    | '/voorwaarden'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AfrekenenRoute: typeof AfrekenenRoute
+  BestellenRoute: typeof BestellenRoute
+  PrivacybeleidRoute: typeof PrivacybeleidRoute
+  VoorbeeldRoute: typeof VoorbeeldRoute
+  VoorwaardenRoute: typeof VoorwaardenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +117,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/afrekenen': {
+      id: '/afrekenen'
+      path: '/afrekenen'
+      fullPath: '/afrekenen'
+      preLoaderRoute: typeof AfrekenenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bestellen': {
+      id: '/bestellen'
+      path: '/bestellen'
+      fullPath: '/bestellen'
+      preLoaderRoute: typeof BestellenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacybeleid': {
+      id: '/privacybeleid'
+      path: '/privacybeleid'
+      fullPath: '/privacybeleid'
+      preLoaderRoute: typeof PrivacybeleidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/voorbeeld': {
+      id: '/voorbeeld'
+      path: '/voorbeeld'
+      fullPath: '/voorbeeld'
+      preLoaderRoute: typeof VoorbeeldRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/voorwaarden': {
+      id: '/voorwaarden'
+      path: '/voorwaarden'
+      fullPath: '/voorwaarden'
+      preLoaderRoute: typeof VoorwaardenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AfrekenenRoute: AfrekenenRoute,
+  BestellenRoute: BestellenRoute,
+  PrivacybeleidRoute: PrivacybeleidRoute,
+  VoorbeeldRoute: VoorbeeldRoute,
+  VoorwaardenRoute: VoorwaardenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
