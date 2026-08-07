@@ -41,7 +41,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Een persoonlijk hardcover sprookjesboek met AI-illustraties van je kind en familiestemmen via QR-codes.",
+          "Van een echte familieherinnering naar een geïllustreerd sprookjesboek met het gezicht van je kind én de stem van opa via QR-code. €34,99, gratis verzending in NL.",
       },
     ],
   }),

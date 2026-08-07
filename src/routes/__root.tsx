@@ -79,15 +79,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "KidStory AI — Jullie familieverhaal als sprookjesboek" },
+      { title: "KidStory AI — Jouw kind, de held van een echt familieverhaal" },
       {
         name: "description",
         content:
-          "Maak van een echte familieherinnering een geïllustreerd sprookjesboek met jouw kind als held en de stemmen van de familie via QR-codes.",
+          "Van een echte familieherinnering naar een geïllustreerd sprookjesboek met het gezicht van je kind én de stem van opa via QR-code. €34,99, gratis verzending in NL.",
       },
       { name: "author", content: "KidStory AI" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "KidStory AI — Jouw kind, de held van een echt familieverhaal" },
+      { name: "twitter:title", content: "KidStory AI — Jouw kind, de held van een echt familieverhaal" },
+      { property: "og:description", content: "Van een echte familieherinnering naar een geïllustreerd sprookjesboek met het gezicht van je kind én de stem van opa via QR-code. €34,99, gratis verzending in NL." },
+      { name: "twitter:description", content: "Van een echte familieherinnering naar een geïllustreerd sprookjesboek met het gezicht van je kind én de stem van opa via QR-code. €34,99, gratis verzending in NL." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/513bf6f067af9f0be2dba786bfdfb1e8/id-preview-3553f0b3--130c1919-7769-4538-8608-5d1026b90946.lovable.app-1786105899175.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/513bf6f067af9f0be2dba786bfdfb1e8/id-preview-3553f0b3--130c1919-7769-4538-8608-5d1026b90946.lovable.app-1786105899175.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
