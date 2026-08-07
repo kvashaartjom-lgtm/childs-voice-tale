@@ -125,7 +125,7 @@ function LandingPage() {
       <SiteHeader />
 
       {/* Hero */}
-      <section className="night-sky relative overflow-hidden">
+      <section className="night-sky starfield relative overflow-hidden">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 md:grid-cols-2 md:py-28">
           <div className="animate-reveal">
             <span className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5 text-xs text-gold">
