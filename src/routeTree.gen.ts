@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AfrekenenRouteImport } from './routes/afrekenen'
 import { Route as BestellenRouteImport } from './routes/bestellen'
 import { Route as PrivacybeleidRouteImport } from './routes/privacybeleid'
 import { Route as VoorbeeldRouteImport } from './routes/voorbeeld'
@@ -18,6 +19,11 @@ import { Route as VoorwaardenRouteImport } from './routes/voorwaarden'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AfrekenenRoute = AfrekenenRouteImport.update({
+  id: '/afrekenen',
+  path: '/afrekenen',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BestellenRoute = BestellenRouteImport.update({
@@ -43,6 +49,7 @@ const VoorwaardenRoute = VoorwaardenRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/afrekenen': typeof AfrekenenRoute
   '/bestellen': typeof BestellenRoute
   '/privacybeleid': typeof PrivacybeleidRoute
   '/voorbeeld': typeof VoorbeeldRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/afrekenen': typeof AfrekenenRoute
   '/bestellen': typeof BestellenRoute
   '/privacybeleid': typeof PrivacybeleidRoute
   '/voorbeeld': typeof VoorbeeldRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/afrekenen': typeof AfrekenenRoute
   '/bestellen': typeof BestellenRoute
   '/privacybeleid': typeof PrivacybeleidRoute
   '/voorbeeld': typeof VoorbeeldRoute
@@ -66,12 +75,24 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/bestellen' | '/privacybeleid' | '/voorbeeld' | '/voorwaarden'
+    | '/'
+    | '/afrekenen'
+    | '/bestellen'
+    | '/privacybeleid'
+    | '/voorbeeld'
+    | '/voorwaarden'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bestellen' | '/privacybeleid' | '/voorbeeld' | '/voorwaarden'
+  to:
+    | '/'
+    | '/afrekenen'
+    | '/bestellen'
+    | '/privacybeleid'
+    | '/voorbeeld'
+    | '/voorwaarden'
   id:
     | '__root__'
     | '/'
+    | '/afrekenen'
     | '/bestellen'
     | '/privacybeleid'
     | '/voorbeeld'
@@ -80,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AfrekenenRoute: typeof AfrekenenRoute
   BestellenRoute: typeof BestellenRoute
   PrivacybeleidRoute: typeof PrivacybeleidRoute
   VoorbeeldRoute: typeof VoorbeeldRoute
@@ -93,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/afrekenen': {
+      id: '/afrekenen'
+      path: '/afrekenen'
+      fullPath: '/afrekenen'
+      preLoaderRoute: typeof AfrekenenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bestellen': {
@@ -128,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AfrekenenRoute: AfrekenenRoute,
   BestellenRoute: BestellenRoute,
   PrivacybeleidRoute: PrivacybeleidRoute,
   VoorbeeldRoute: VoorbeeldRoute,
