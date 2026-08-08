@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square, RotateCcw, Play, Pause, Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -24,9 +25,10 @@ export function VoiceRecorder({
   maxSeconds = 300,
   seconds,
   onChange,
-  label = "Neem je verhaal op",
+  label,
   hint,
 }: VoiceRecorderProps) {
+  const { t } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -54,11 +56,13 @@ export function VoiceRecorder({
   const hasRecording = !isRecording && seconds > 0;
   const enough = seconds >= minSeconds;
 
+  const displayLabel = label ?? t("voiceRecorder.defaultLabel");
+
   return (
     <div className="rounded-3xl border border-border bg-surface/70 p-6 shadow-soft sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="font-display text-lg text-cream">{label}</p>
+          <p className="font-display text-lg text-cream">{displayLabel}</p>
           {hint ? <p className="mt-1 text-sm text-muted-foreground">{hint}</p> : null}
         </div>
         <span
@@ -103,7 +107,7 @@ export function VoiceRecorder({
             className="rounded-full"
           >
             <Mic className="size-4" />
-            {hasRecording ? "Verder opnemen" : "Start opname"}
+            {hasRecording ? t("voiceRecorder.resume") : t("voiceRecorder.start")}
           </Button>
         ) : (
           <Button
@@ -113,7 +117,7 @@ export function VoiceRecorder({
             onClick={() => setIsRecording(false)}
           >
             <Square className="size-4" />
-            Stop
+            {t("voiceRecorder.stop")}
           </Button>
         )}
 
@@ -126,7 +130,7 @@ export function VoiceRecorder({
               onClick={() => setIsPlaying((p) => !p)}
             >
               {isPlaying ? <Pause className="size-4" /> : <Play className="size-4" />}
-              {isPlaying ? "Pauzeer" : "Beluister"}
+              {isPlaying ? t("voiceRecorder.pause") : t("voiceRecorder.listen")}
             </Button>
             <Button
               type="button"
@@ -138,7 +142,7 @@ export function VoiceRecorder({
               }}
             >
               <RotateCcw className="size-4" />
-              Opnieuw opnemen
+              {t("voiceRecorder.reRecord")}
             </Button>
           </>
         ) : null}
@@ -152,8 +156,11 @@ export function VoiceRecorder({
       >
         {enough ? <Check className="size-4" /> : null}
         {enough
-          ? "Lengte is perfect — hier kunnen we een prachtig verhaal van maken."
-          : `Neem minimaal ${Math.round(minSeconds / 60)} minuten op (max ${Math.round(maxSeconds / 60)} minuten).`}
+          ? t("voiceRecorder.doneHint")
+          : t("voiceRecorder.minHint", {
+              min: Math.round(minSeconds / 60),
+              max: Math.round(maxSeconds / 60),
+            })}
       </p>
     </div>
   );

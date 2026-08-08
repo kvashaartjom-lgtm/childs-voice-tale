@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Upload, Check, ArrowLeft, ArrowRight, Sparkles, Image as ImageIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,20 +36,15 @@ export const Route = createFileRoute("/bestellen")({
   component: OrderWizard,
 });
 
-const STEP_TITLES = [
-  "Over je kind",
-  "Foto uploaden",
-  "Jullie verhaal",
-  "Kies een stijl",
-  "Familiestem voor de QR-code",
-];
-
 function OrderWizard() {
+  const { t } = useTranslation();
   const { order, update } = useOrder();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const stepTitles = t("wizard.steps", { returnObjects: true }) as string[];
 
   const canContinue = [
     order.childName.trim().length > 1 && order.ageBracket !== null,
@@ -83,8 +79,8 @@ function OrderWizard() {
       <main className="mx-auto max-w-3xl px-5 py-12">
         {/* Progress */}
         <ol className="flex items-center gap-2">
-          {STEP_TITLES.map((title, i) => (
-            <li key={title} className="flex flex-1 flex-col gap-2">
+          {stepTitles.map((title, i) => (
+            <li key={i} className="flex flex-1 flex-col gap-2">
               <span
                 className={cn(
                   "h-1.5 rounded-full transition-colors",
@@ -104,30 +100,28 @@ function OrderWizard() {
         </ol>
 
         <p className="mt-8 text-sm text-muted-foreground">
-          Stap {step + 1} van {STEP_TITLES.length}
+          {t("wizard.stepIndicator", { current: step + 1, total: stepTitles.length })}
         </p>
-        <h1 className="mt-2 font-display text-3xl text-cream sm:text-4xl">{STEP_TITLES[step]}</h1>
+        <h1 className="mt-2 font-display text-3xl text-cream sm:text-4xl">{stepTitles[step]}</h1>
 
         <div className="mt-8 animate-reveal" key={step}>
           {step === 0 ? (
             <div className="space-y-8">
               <div>
                 <Label htmlFor="childName" className="text-cream">
-                  Voornaam van je kind
+                  {t("wizard.childNameLabel")}
                 </Label>
                 <Input
                   id="childName"
                   value={order.childName}
                   onChange={(e) => update({ childName: e.target.value })}
-                  placeholder="Bijv. Fenna"
+                  placeholder={t("wizard.childNamePlaceholder")}
                   className="mt-2 h-12 rounded-2xl bg-surface"
                 />
               </div>
               <div>
-                <p className="text-cream">Hoe oud is je kind?</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  De taal, zinslengte en complexiteit van het verhaal passen we aan op de leeftijd.
-                </p>
+                <p className="text-cream">{t("wizard.ageTitle")}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t("wizard.ageSub")}</p>
                 <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {AGE_BRACKETS.map((bracket) => (
                     <button
@@ -139,8 +133,12 @@ function OrderWizard() {
                         order.ageBracket === bracket.id && "border-gold glow-gold",
                       )}
                     >
-                      <span className="font-display text-lg text-cream">{bracket.label}</span>
-                      <span className="mt-1 block text-xs text-muted-foreground">{bracket.note}</span>
+                      <span className="font-display text-lg text-cream">
+                        {t(`ageBrackets.${bracket.id}.label`)}
+                      </span>
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        {t(`ageBrackets.${bracket.id}.note`)}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -163,21 +161,19 @@ function OrderWizard() {
                   <>
                     <img
                       src={order.photoDataUrl}
-                      alt="Voorbeeld van de geüploade foto"
+                      alt={t("wizard.photoAlt")}
                       className="size-40 rounded-2xl object-cover shadow-soft"
                     />
                     <p className="mt-4 text-sm text-cream/80">{order.photoName}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Klik om een andere foto te kiezen</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{t("wizard.photoChange")}</p>
                   </>
                 ) : (
                   <>
                     <span className="flex size-14 items-center justify-center rounded-2xl bg-gold/15 text-gold">
                       <Upload className="size-6" />
                     </span>
-                    <p className="mt-4 font-display text-lg text-cream">Sleep hier een foto naartoe</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Of klik om te kiezen — één duidelijke foto van het gezicht is genoeg (JPG of PNG).
-                    </p>
+                    <p className="mt-4 font-display text-lg text-cream">{t("wizard.photoDrop")}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{t("wizard.photoChoose")}</p>
                   </>
                 )}
                 <input
@@ -189,10 +185,7 @@ function OrderWizard() {
                 />
               </div>
 
-              <PrivacyBadge>
-                Deze foto wordt direct na het genereren van de illustraties verwijderd. Je ontvangt
-                hiervan een bevestiging per e-mail.
-              </PrivacyBadge>
+              <PrivacyBadge>{t("wizard.photoPrivacy")}</PrivacyBadge>
 
               <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-surface p-4">
                 <Checkbox
@@ -200,10 +193,7 @@ function OrderWizard() {
                   onCheckedChange={(v) => update({ guardianConsent: v === true })}
                   className="mt-0.5"
                 />
-                <span className="text-sm text-cream/85">
-                  Ik ben de ouder of wettelijke verzorger van dit kind en geef toestemming om deze foto
-                  te verwerken voor het maken van de illustraties.
-                </span>
+                <span className="text-sm text-cream/85">{t("wizard.photoConsent")}</span>
               </label>
             </div>
           ) : null}
@@ -215,10 +205,10 @@ function OrderWizard() {
             >
               <TabsList className="rounded-full bg-surface p-1">
                 <TabsTrigger value="record" className="rounded-full px-5">
-                  Inspreken
+                  {t("wizard.tabRecord")}
                 </TabsTrigger>
                 <TabsTrigger value="type" className="rounded-full px-5">
-                  Typen
+                  {t("wizard.tabType")}
                 </TabsTrigger>
               </TabsList>
 
@@ -226,12 +216,10 @@ function OrderWizard() {
                 <VoiceRecorder
                   seconds={order.storyRecordingSeconds}
                   onChange={(s) => update({ storyRecordingSeconds: s })}
-                  label="Vertel jullie herinnering"
-                  hint="Vertel gewoon alsof je het aan een vriend vertelt — 2 tot 5 minuten."
+                  label={t("wizard.recordLabel")}
+                  hint={t("wizard.recordHint")}
                 />
-                <PrivacyBadge tone="rose">
-                  Jouw stem wordt ook de voorleesstem in het boek — één opname, twee cadeaus.
-                </PrivacyBadge>
+                <PrivacyBadge tone="rose">{t("wizard.recordPrivacy")}</PrivacyBadge>
               </TabsContent>
 
               <TabsContent value="type" className="mt-6">
@@ -239,14 +227,10 @@ function OrderWizard() {
                   rows={12}
                   value={order.storyText}
                   onChange={(e) => update({ storyText: e.target.value })}
-                  placeholder={
-                    "Wat gebeurde er precies?\nWie waren erbij?\nWat maakte het zo bijzonder?\nHoe liep het af?"
-                  }
+                  placeholder={t("wizard.typePlaceholder")}
                   className="rounded-3xl bg-surface p-6 text-base leading-relaxed"
                 />
-                <p className="mt-3 text-sm text-muted-foreground">
-                  Beantwoord de vier vragen hierboven in je eigen woorden. Details maken het verhaal echt.
-                </p>
+                <p className="mt-3 text-sm text-muted-foreground">{t("wizard.typeHint")}</p>
               </TabsContent>
             </Tabs>
           ) : null}
@@ -257,8 +241,8 @@ function OrderWizard() {
                 {ILLUSTRATION_STYLES.map((style) => (
                   <StyleCard
                     key={style.id}
-                    name={style.name}
-                    description={style.description}
+                    name={t(`illustrationStyles.${style.id}.name`)}
+                    description={t(`illustrationStyles.${style.id}.description`)}
                     image={STYLE_IMAGES[style.id]}
                     selected={order.styleId === style.id}
                     onSelect={() => update({ styleId: style.id })}
@@ -267,13 +251,13 @@ function OrderWizard() {
               </div>
               <div>
                 <Label htmlFor="customStyle" className="flex items-center gap-2 text-cream">
-                  <ImageIcon className="size-4 text-gold" /> Of beschrijf je eigen stijl
+                  <ImageIcon className="size-4 text-gold" /> {t("wizard.customStyleLabel")}
                 </Label>
                 <Input
                   id="customStyle"
                   value={order.customStyle}
                   onChange={(e) => update({ customStyle: e.target.value })}
-                  placeholder="Bijv. zachte pastelkleuren met veel sterren en een oud-Hollandse sfeer"
+                  placeholder={t("wizard.customStylePlaceholder")}
                   className="mt-2 h-12 rounded-2xl bg-surface"
                 />
               </div>
@@ -282,20 +266,16 @@ function OrderWizard() {
 
           {step === 4 ? (
             <div className="space-y-6">
-              <p className="text-muted-foreground">
-                Kies één familielid wiens stem straks in het gedrukte boek te horen is. Wij plaatsen
-                kleine gouden QR-codes bij de mooiste passages — scannen met een telefoon en de stem
-                klinkt.
-              </p>
+              <p className="text-muted-foreground">{t("wizard.voiceExplain")}</p>
               <div>
                 <Label htmlFor="voiceName" className="text-cream">
-                  Van wie is deze stem?
+                  {t("wizard.voiceNameLabel")}
                 </Label>
                 <Input
                   id="voiceName"
                   value={order.familyVoiceName}
                   onChange={(e) => update({ familyVoiceName: e.target.value })}
-                  placeholder="Bijv. opa Jan"
+                  placeholder={t("wizard.voiceNamePlaceholder")}
                   className="mt-2 h-12 rounded-2xl bg-surface"
                 />
               </div>
@@ -304,8 +284,8 @@ function OrderWizard() {
                 maxSeconds={120}
                 seconds={order.familyVoiceSeconds}
                 onChange={(s) => update({ familyVoiceSeconds: s })}
-                label="Neem de familiestem op"
-                hint="Een halve minuut voorlezen is al genoeg voor een prachtig resultaat."
+                label={t("wizard.voiceRecordLabel")}
+                hint={t("wizard.voiceRecordHint")}
               />
               <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-rose/30 bg-rose/10 p-4">
                 <Checkbox
@@ -313,10 +293,7 @@ function OrderWizard() {
                   onCheckedChange={(v) => update({ voiceConsent: v === true })}
                   className="mt-0.5"
                 />
-                <span className="text-sm text-cream/85">
-                  Ik bevestig dat dit mijn eigen stem is en geef toestemming voor het klonen ervan. De
-                  originele opname wordt na verwerking verwijderd.
-                </span>
+                <span className="text-sm text-cream/85">{t("wizard.voiceConsent")}</span>
               </label>
             </div>
           ) : null}
@@ -329,7 +306,7 @@ function OrderWizard() {
             onClick={() => setStep((s) => Math.max(0, s - 1))}
             disabled={step === 0}
           >
-            <ArrowLeft className="size-4" /> Terug
+            <ArrowLeft className="size-4" /> {t("wizard.back")}
           </Button>
 
           {step < 4 ? (
@@ -338,7 +315,7 @@ function OrderWizard() {
               disabled={!canContinue}
               onClick={() => setStep((s) => s + 1)}
             >
-              Volgende <ArrowRight className="size-4" />
+              {t("wizard.next")} <ArrowRight className="size-4" />
             </Button>
           ) : (
             <Button
@@ -346,18 +323,16 @@ function OrderWizard() {
               disabled={!canContinue}
               onClick={handleGenerate}
             >
-              <Sparkles className="size-4" /> Genereer voorbeeld
+              <Sparkles className="size-4" /> {t("wizard.generate")}
             </Button>
           )}
         </div>
 
         {!canContinue ? (
-          <p className="mt-4 text-right text-xs text-muted-foreground">
-            Vul deze stap eerst volledig in om verder te gaan.
-          </p>
+          <p className="mt-4 text-right text-xs text-muted-foreground">{t("wizard.incomplete")}</p>
         ) : (
           <p className="mt-4 flex items-center justify-end gap-2 text-xs text-gold">
-            <Check className="size-3.5" /> Klaar voor de volgende stap
+            <Check className="size-3.5" /> {t("wizard.stepReady")}
           </p>
         )}
       </main>

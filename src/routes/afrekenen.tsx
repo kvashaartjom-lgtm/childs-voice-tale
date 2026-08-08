@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, CreditCard, Loader2, Truck, Trash2, Mail, QrCode } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,7 @@ export const Route = createFileRoute("/afrekenen")({
 const BANKS = ["ABN AMRO", "ASN Bank", "bunq", "ING", "Knab", "Rabobank", "Revolut", "SNS", "Triodos"];
 
 function CheckoutPage() {
+  const { t } = useTranslation();
   const { order, update } = useOrder();
   const [method, setMethod] = useState<"ideal" | "card">("ideal");
   const [bank, setBank] = useState("");
@@ -58,10 +60,13 @@ function CheckoutPage() {
   const pay = async () => {
     setProcessing(true);
     const result = await createOrder(order);
+    update({ photoDataUrl: null, photoName: null });
     setConfirmed(result);
     setProcessing(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const styleName = style ? t(`illustrationStyles.${style.id}.name`) : order.customStyle || "—";
 
   if (confirmed) {
     return (
@@ -72,44 +77,44 @@ function CheckoutPage() {
             <Check className="size-8" />
           </span>
           <h1 className="mt-8 font-display text-3xl text-cream sm:text-4xl">
-            Bedankt! Jullie boek wordt gemaakt ✨
+            {t("checkout.successTitle")}
           </h1>
           <p className="mt-4 text-muted-foreground">
-            Bestelnummer <span className="text-cream">{confirmed.id}</span> — betaald{" "}
-            {formatEuro(confirmed.total)}
+            {t("checkout.successOrderText", { id: confirmed.id, total: formatEuro(confirmed.total) })}
           </p>
 
           <div className="mt-10 space-y-4 text-left">
             <div className="rounded-3xl border border-gold/35 bg-gold/10 p-6">
               <p className="flex items-start gap-3 text-cream/90">
                 <Trash2 className="mt-0.5 size-5 shrink-0 text-gold" />
-                De foto van je kind wordt nu verwijderd. Je ontvangt binnen enkele minuten een
-                bevestiging per e-mail. ✓
+                {t("checkout.successPhotoDeleted")}
               </p>
             </div>
             <div className="rounded-3xl border border-border bg-surface p-6">
               <p className="flex items-start gap-3 text-cream/90">
                 <Truck className="mt-0.5 size-5 shrink-0 text-gold" />
-                Verwachte levering: <span className="text-gold">{confirmed.estimatedDelivery}</span>
+                {t("checkout.successDelivery")}{" "}
+                <span className="text-gold">{confirmed.estimatedDelivery}</span>
               </p>
             </div>
             <div className="rounded-3xl border border-border bg-surface p-6">
               <p className="flex items-start gap-3 text-cream/90">
                 <Mail className="mt-0.5 size-5 shrink-0 text-gold" />
-                De PDF-versie komt naar je inbox, zodat je het verhaal meteen kunt voorlezen.
+                {t("checkout.successPdf")}
               </p>
             </div>
             <div className="rounded-3xl border border-rose/30 bg-rose/10 p-6">
               <p className="flex items-start gap-3 text-cream/90">
                 <QrCode className="mt-0.5 size-5 shrink-0 text-rose-soft" />
-                De stem van {order.familyVoiceName.trim() || "de familie"} is verwerkt in de QR-codes.
-                De originele opname is verwijderd.
+                {t("checkout.successVoice", {
+                  name: order.familyVoiceName.trim() || t("spreadViewer.qrDefaultName"),
+                })}
               </p>
             </div>
           </div>
 
           <Button asChild variant="outline" className="mt-10 rounded-full">
-            <Link to="/">Terug naar home</Link>
+            <Link to="/">{t("checkout.successBack")}</Link>
           </Button>
         </main>
         <SiteFooter />
@@ -123,47 +128,45 @@ function CheckoutPage() {
       <main className="mx-auto grid max-w-5xl gap-10 px-5 py-12 lg:grid-cols-[1fr_380px]">
         <div className="space-y-10">
           <div>
-            <h1 className="font-display text-3xl text-cream sm:text-4xl">Afrekenen</h1>
-            <p className="mt-3 text-muted-foreground">
-              Nog één stap en jullie verhaal gaat naar de drukker.
-            </p>
+            <h1 className="font-display text-3xl text-cream sm:text-4xl">{t("checkout.title")}</h1>
+            <p className="mt-3 text-muted-foreground">{t("checkout.sub")}</p>
           </div>
 
           <section className="rounded-3xl border border-border bg-surface p-6 sm:p-8">
-            <h2 className="font-display text-xl text-cream">Bezorgadres</h2>
+            <h2 className="font-display text-xl text-cream">{t("checkout.addressTitle")}</h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <Field
                 id="name"
-                label="Naam"
+                label={t("checkout.fieldName")}
                 value={shipping.name}
                 onChange={(v) => update({ shipping: { ...shipping, name: v } })}
                 className="sm:col-span-2"
               />
               <Field
                 id="street"
-                label="Straat + huisnummer"
+                label={t("checkout.fieldStreet")}
                 value={shipping.street}
                 onChange={(v) => update({ shipping: { ...shipping, street: v } })}
                 className="sm:col-span-2"
               />
               <Field
                 id="postalCode"
-                label="Postcode"
-                placeholder="1012 AB"
+                label={t("checkout.fieldPostcode")}
+                placeholder={t("checkout.fieldPostcodePlaceholder")}
                 value={shipping.postalCode}
                 onChange={(v) => update({ shipping: { ...shipping, postalCode: v } })}
               />
               <Field
                 id="city"
-                label="Plaats"
+                label={t("checkout.fieldCity")}
                 value={shipping.city}
                 onChange={(v) => update({ shipping: { ...shipping, city: v } })}
               />
               <Field
                 id="email"
-                label="E-mailadres"
+                label={t("checkout.fieldEmail")}
                 type="email"
-                placeholder="jouw@email.nl"
+                placeholder={t("checkout.fieldEmailPlaceholder")}
                 value={shipping.email}
                 onChange={(v) => update({ shipping: { ...shipping, email: v } })}
                 className="sm:col-span-2"
@@ -172,7 +175,7 @@ function CheckoutPage() {
           </section>
 
           <section className="rounded-3xl border border-border bg-surface p-6 sm:p-8">
-            <h2 className="font-display text-xl text-cream">Betaalmethode</h2>
+            <h2 className="font-display text-xl text-cream">{t("checkout.paymentTitle")}</h2>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <button
                 type="button"
@@ -182,9 +185,9 @@ function CheckoutPage() {
                   method === "ideal" && "border-gold glow-gold",
                 )}
               >
-                <span className="font-display text-lg text-cream">iDEAL</span>
+                <span className="font-display text-lg text-cream">{t("checkout.idealTitle")}</span>
                 <span className="mt-1 block text-xs text-muted-foreground">
-                  Direct betalen via je eigen bank
+                  {t("checkout.idealSub")}
                 </span>
               </button>
               <button
@@ -196,18 +199,20 @@ function CheckoutPage() {
                 )}
               >
                 <span className="flex items-center gap-2 font-display text-lg text-cream">
-                  <CreditCard className="size-4 text-gold" /> Creditcard
+                  <CreditCard className="size-4 text-gold" /> {t("checkout.cardTitle")}
                 </span>
-                <span className="mt-1 block text-xs text-muted-foreground">Visa of Mastercard</span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  {t("checkout.cardSub")}
+                </span>
               </button>
             </div>
 
             {method === "ideal" ? (
               <div className="mt-6">
-                <Label className="text-cream">Kies je bank</Label>
+                <Label className="text-cream">{t("checkout.bankLabel")}</Label>
                 <Select value={bank} onValueChange={setBank}>
                   <SelectTrigger className="mt-2 h-12 w-full rounded-2xl bg-background/40">
-                    <SelectValue placeholder="Selecteer je bank" />
+                    <SelectValue placeholder={t("checkout.bankPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {BANKS.map((b) => (
@@ -220,45 +225,60 @@ function CheckoutPage() {
               </div>
             ) : (
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <Field id="cardNumber" label="Kaartnummer" placeholder="4242 4242 4242 4242" className="sm:col-span-2" />
-                <Field id="expiry" label="Vervaldatum" placeholder="12/29" />
-                <Field id="cvc" label="CVC" placeholder="123" />
+                <Field
+                  id="cardNumber"
+                  label={t("checkout.cardNumber")}
+                  placeholder={t("checkout.cardNumberPlaceholder")}
+                  className="sm:col-span-2"
+                />
+                <Field
+                  id="expiry"
+                  label={t("checkout.cardExpiry")}
+                  placeholder={t("checkout.cardExpiryPlaceholder")}
+                />
+                <Field
+                  id="cvc"
+                  label={t("checkout.cardCvc")}
+                  placeholder={t("checkout.cardCvcPlaceholder")}
+                />
               </div>
             )}
 
-            <p className="mt-6 text-xs text-muted-foreground">
-              Dit is een demo-omgeving. Er wordt geen echte betaling verwerkt.
-            </p>
+            <p className="mt-6 text-xs text-muted-foreground">{t("checkout.demoDisclaimer")}</p>
           </section>
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:h-fit">
           <div className="rounded-3xl border border-gold/30 bg-surface p-6 shadow-soft">
-            <h2 className="font-display text-xl text-cream">Jullie bestelling</h2>
+            <h2 className="font-display text-xl text-cream">{t("checkout.orderSummaryTitle")}</h2>
             <p className="mt-2 text-sm text-gold">
-              {order.book?.title || "Jullie persoonlijke sprookjesboek"}
+              {order.book?.title || t("checkout.orderSummaryTitle")}
             </p>
             <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
-              <SummaryRow label="Naam kind" value={order.childName || "—"} />
-              <SummaryRow label="Illustratiestijl" value={style?.name || order.customStyle || "—"} />
-              <SummaryRow label="Uitvoering" value="Hardcover, 24–32 pagina's" />
+              <SummaryRow label={t("checkout.summaryChildName")} value={order.childName || "—"} />
+              <SummaryRow label={t("checkout.summaryStyle")} value={styleName} />
+              <SummaryRow label={t("checkout.summaryFormat")} value={t("checkout.summaryFormatValue")} />
               <SummaryRow
-                label="QR-familiestem"
-                value={order.familyVoiceName.trim() ? `1 × ${order.familyVoiceName}` : "1 stem"}
+                label={t("checkout.summaryVoice")}
+                value={
+                  order.familyVoiceName.trim()
+                    ? t("checkout.summaryVoiceValue", { name: order.familyVoiceName })
+                    : t("checkout.summaryVoiceDefault")
+                }
               />
-              <SummaryRow label="PDF-versie" value="Inbegrepen" />
+              <SummaryRow label={t("checkout.summaryPdf")} value={t("checkout.summaryPdfIncluded")} />
             </ul>
             <div className="mt-6 border-t border-border pt-5">
               <div className="flex items-center justify-between text-cream">
-                <span>Boek</span>
+                <span>{t("checkout.summaryBook")}</span>
                 <span>{formatEuro(BOOK_PRICE)}</span>
               </div>
               <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
-                <span>Verzending</span>
-                <span className="text-gold">Gratis (4–6 werkdagen)</span>
+                <span>{t("checkout.summaryShipping")}</span>
+                <span className="text-gold">{t("checkout.summaryShippingValue")}</span>
               </div>
               <div className="mt-4 flex items-center justify-between font-display text-2xl text-cream">
-                <span>Totaal</span>
+                <span>{t("checkout.summaryTotal")}</span>
                 <span>{formatEuro(BOOK_PRICE)}</span>
               </div>
             </div>
@@ -270,14 +290,14 @@ function CheckoutPage() {
             >
               {processing ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" /> Betaling verwerken…
+                  <Loader2 className="size-4 animate-spin" /> {t("checkout.payButtonProcessing")}
                 </>
               ) : (
-                `Betaal ${formatEuro(BOOK_PRICE)}`
+                t("checkout.payButton", { price: formatEuro(BOOK_PRICE) })
               )}
             </Button>
             <p className="mt-4 text-center text-xs text-muted-foreground">
-              Gratis verzending in Nederland (4–6 werkdagen)
+              {t("checkout.shippingNote")}
             </p>
           </div>
         </aside>

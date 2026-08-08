@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Pencil, Sparkles, QrCode, Check, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +21,7 @@ interface SpreadViewerProps {
 }
 
 export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps) {
+  const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -42,6 +44,8 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
     setVariantOpen(false);
   };
 
+  const qrName = voiceName?.trim() || t("spreadViewer.qrDefaultName");
+
   return (
     <TooltipProvider delayDuration={150}>
       <div className="mx-auto w-full max-w-5xl">
@@ -63,7 +67,7 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Hier klinkt de stem van {voiceName?.trim() || "de familie"}
+                  {t("spreadViewer.qrTooltip", { name: qrName })}
                 </TooltipContent>
               </Tooltip>
             ) : null}
@@ -90,7 +94,7 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
                       setEditing(false);
                     }}
                   >
-                    <Check className="size-4" /> Opslaan
+                    <Check className="size-4" /> {t("spreadViewer.save")}
                   </Button>
                   <Button
                     size="sm"
@@ -98,7 +102,7 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
                     className="rounded-full"
                     onClick={() => setEditing(false)}
                   >
-                    Annuleren
+                    {t("spreadViewer.cancel")}
                   </Button>
                 </div>
               </div>
@@ -118,7 +122,7 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
                   setEditing(true);
                 }}
               >
-                <Pencil className="size-4" /> Tekst bewerken
+                <Pencil className="size-4" /> {t("spreadViewer.editText")}
               </Button>
               <Button
                 variant="outline"
@@ -126,7 +130,7 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
                 className="rounded-full"
                 onClick={() => setVariantOpen(true)}
               >
-                <Sparkles className="size-4" /> Illustratie opnieuw genereren
+                <Sparkles className="size-4" /> {t("spreadViewer.regenerate")}
               </Button>
             </div>
           </div>
@@ -139,7 +143,7 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
             className="rounded-full"
             onClick={() => go(-1)}
             disabled={index === 0}
-            aria-label="Vorige spread"
+            aria-label={t("spreadViewer.prevSpread")}
           >
             <ChevronLeft className="size-5" />
           </Button>
@@ -149,7 +153,7 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
               <button
                 key={s.id}
                 type="button"
-                aria-label={`Ga naar ${s.pageLabel}`}
+                aria-label={t("spreadViewer.goToSpread", { label: s.pageLabel })}
                 onClick={() => {
                   setEditing(false);
                   setIndex(i);
@@ -168,7 +172,7 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
             className="rounded-full"
             onClick={() => go(1)}
             disabled={index === spreads.length - 1}
-            aria-label="Volgende spread"
+            aria-label={t("spreadViewer.nextSpread")}
           >
             <ChevronRight className="size-5" />
           </Button>
@@ -177,9 +181,9 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
         <Dialog open={variantOpen} onOpenChange={setVariantOpen}>
           <DialogContent className="max-w-3xl rounded-3xl">
             <DialogHeader>
-              <DialogTitle className="font-display text-2xl">Kies een nieuwe illustratie</DialogTitle>
+              <DialogTitle className="font-display text-2xl">{t("spreadViewer.dialogTitle")}</DialogTitle>
               <DialogDescription>
-                We hebben drie alternatieven getoverd voor {spread.pageLabel.toLowerCase()}.
+                {t("spreadViewer.dialogSub", { label: spread.pageLabel.toLowerCase() })}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -192,7 +196,7 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
                 >
                   <img
                     src={url}
-                    alt={`Variant ${i + 1}`}
+                    alt={t("spreadViewer.variantAlt", { n: i + 1 })}
                     loading="lazy"
                     className="aspect-square w-full object-cover"
                   />

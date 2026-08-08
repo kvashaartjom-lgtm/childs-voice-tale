@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { QrCode, ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SpreadViewer } from "@/components/SpreadViewer";
@@ -28,9 +29,11 @@ export const Route = createFileRoute("/voorbeeld")({
 });
 
 function PreviewPage() {
+  const { t } = useTranslation();
   const { order, update } = useOrder();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!order.book);
+  const isDemo = !order.childName.trim();
 
   useEffect(() => {
     if (order.book) return;
@@ -63,17 +66,28 @@ function PreviewPage() {
 
       <main className="mx-auto max-w-5xl px-5 py-12">
         <header className="text-center">
-          <h1 className="font-display text-3xl text-cream sm:text-4xl">
-            Jullie boek is klaar om te bekijken ✨
-          </h1>
+          <h1 className="font-display text-3xl text-cream sm:text-4xl">{t("preview.title")}</h1>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            {order.book?.title ? `«${order.book.title}» — ` : ""}
-            blader door de pagina's, pas teksten aan en genereer illustraties opnieuw tot alles klopt.
+            {order.book?.title
+              ? t("preview.subWithTitle", { title: order.book.title })
+              : t("preview.sub")}
           </p>
           <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-gold/35 bg-gold/10 px-4 py-1.5 text-xs text-gold">
-            <QrCode className="size-3.5" /> De gouden QR-badges tonen waar de familiestem klinkt
+            <QrCode className="size-3.5" /> {t("preview.qrBadge")}
           </p>
         </header>
+
+        {isDemo && (
+          <div className="mb-8 flex flex-col items-center gap-4 rounded-3xl border border-gold/30 bg-surface p-6 text-center sm:flex-row sm:justify-between sm:text-left">
+            <p className="text-sm text-cream/80">
+              <span className="font-display text-cream">{t("preview.demoBanner")}</span>{" "}
+              {t("preview.demoBannerSub")}
+            </p>
+            <Button asChild className="shrink-0 rounded-full glow-gold">
+              <Link to="/bestellen">{t("preview.demoCta")}</Link>
+            </Button>
+          </div>
+        )}
 
         <div className="mt-12">
           {loading || !order.book ? (
@@ -96,20 +110,20 @@ function PreviewPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-4">
           <div>
             <p className="font-display text-lg text-cream">{formatEuro(BOOK_PRICE)}</p>
-            <p className="text-xs text-muted-foreground">Incl. btw en gratis verzending in NL</p>
+            <p className="text-xs text-muted-foreground">{t("preview.priceNote")}</p>
           </div>
           <div className="flex items-center gap-3">
             <Link
               to="/bestellen"
               className="hidden text-sm text-muted-foreground transition-colors hover:text-cream sm:block"
             >
-              Terug naar de wizard
+              {t("preview.backToWizard")}
             </Link>
             <Button
               className="h-12 rounded-full px-6 glow-gold"
               onClick={() => navigate({ to: "/afrekenen" })}
             >
-              Alles goed? Naar bestellen <ArrowRight className="size-4" />
+              {t("preview.orderCta")} <ArrowRight className="size-4" />
             </Button>
           </div>
         </div>
