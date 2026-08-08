@@ -47,17 +47,51 @@ const MOCK_TEXTS = [
   "En elke avond, als het donker werd, klonk de stem van opa weer door de kamer. Voor altijd bewaard, tussen de bladzijden van dit boek.",
 ];
 
+interface StorySpread {
+  spreadNumber: number;
+  text: string;
+}
+
+async function fetchStoryTexts(order: OrderState, name: string): Promise<string[] | null> {
+  // Only call the edge function when the user typed their story (voice transcription is future work)
+  if (order.storyMode !== "type" || order.storyText.trim().length < 40) return null;
+
+  try {
+    const { supabase } = await import("./supabase");
+    const { data, error } = await supabase.functions.invoke("generate-story", {
+      body: {
+        childName: name,
+        ageBracket: order.ageBracket ?? "3-5",
+        storyText: order.storyText,
+      },
+    });
+
+    if (error || !Array.isArray(data?.spreads)) return null;
+
+    return (data.spreads as StorySpread[])
+      .sort((a, b) => a.spreadNumber - b.spreadNumber)
+      .map((s) => s.text);
+  } catch {
+    return null;
+  }
+}
+
 export async function generateBook(order: OrderState): Promise<GeneratedBook> {
-  await delay(600);
   const name = order.childName?.trim() || "Sam";
+
+  // Real story generation — falls back to mock silently on any error
+  const realTexts = await fetchStoryTexts(order, name);
+
+  if (!realTexts) await delay(600);
+
   return {
     id: `book_${Math.random().toString(36).slice(2, 9)}`,
     title: `${name} en de Gouden Lantaarn`,
-    spreads: MOCK_TEXTS.map((text, index) => ({
+    spreads: MOCK_TEXTS.map((mockText, index) => ({
       id: `spread_${index + 1}`,
       pageLabel: `Pagina ${index * 2 + 3}–${index * 2 + 4}`,
       imageUrl: mockIllustration(order.styleId, index),
-      text: text.replaceAll("{name}", name),
+      text: realTexts?.[index] ?? mockText.replaceAll("{name}", name),
       hasQrCode: index === 1 || index === 5 || index === 9,
     })),
   };
@@ -91,12 +125,20 @@ export async function createOrder(_order: OrderState): Promise<CreatedOrder> {
   };
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function joinWaitlist(email: string): Promise<{ ok: true }> {
-  await delay(900);
-  if (typeof window !== "undefined") {
-    const stored = JSON.parse(window.localStorage.getItem("kidstory_waitlist") || "[]");
-    window.localStorage.setItem("kidstory_waitlist", JSON.stringify([...stored, email]));
+  if (!EMAIL_RE.test(email)) throw new Error("invalid_email");
+
+  const { supabase } = await import("./supabase");
+  const { error } = await supabase.from("waitlist").insert({ email });
+
+  if (error) {
+    // 23505 = unique_violation — email already registered, treat as success
+    if (error.code === "23505") return { ok: true };
+    throw new Error("network_error");
   }
+
   return { ok: true };
 }
 
