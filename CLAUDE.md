@@ -26,11 +26,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```sh
 npm run dev        # start dev server (Vite)
 npm run build      # production build
+npm run preview    # serve the production build locally
 npm run lint       # ESLint
 npm run format     # Prettier
 ```
 
 No test suite is configured. The app is tested manually in the browser.
+
+## Перед каждым пушем
+
+**Обязательно** выполни перед каждым `git push`:
+
+```sh
+npm run build && npm run preview
+```
+
+После запуска `preview` открой каждую страницу в браузере и убедись, что они рендерятся без ошибок:
+
+- `/` — лендинг
+- `/bestellen` — мастер заказа (все 5 шагов)
+- `/voorbeeld` — предпросмотр книги
+- `/afrekenen` — чекаут
+- `/privacybeleid` — политика конфиденциальности
+- `/voorwaarden` — условия
+
+**Пуш со сломанным билдом запрещён.** Если `npm run build` падает — сначала починить, потом пушить.
 
 ## Architecture
 

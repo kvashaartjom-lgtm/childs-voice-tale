@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -127,6 +128,15 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // Restore the user's language preference after SSR hydration.
+  // Must run in useEffect (client-only) to avoid SSR/client HTML mismatch.
+  useEffect(() => {
+    const stored = localStorage.getItem("kidstory_lang");
+    if (stored === "nl" || stored === "en") {
+      i18n.changeLanguage(stored);
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -24,7 +24,7 @@ export function SiteHeader() {
           <div className="flex items-center gap-0.5 text-sm">
             <button
               type="button"
-              onClick={() => i18n.changeLanguage("nl")}
+              onClick={() => { i18n.changeLanguage("nl"); localStorage.setItem("kidstory_lang", "nl"); }}
               className={cn(
                 "rounded-full px-2.5 py-1 transition-colors",
                 i18n.language === "nl" ? "text-cream" : "text-muted-foreground hover:text-cream",
@@ -35,7 +35,7 @@ export function SiteHeader() {
             <span className="text-muted-foreground/40">|</span>
             <button
               type="button"
-              onClick={() => i18n.changeLanguage("en")}
+              onClick={() => { i18n.changeLanguage("en"); localStorage.setItem("kidstory_lang", "en"); }}
               className={cn(
                 "rounded-full px-2.5 py-1 transition-colors",
                 i18n.language === "en" ? "text-cream" : "text-muted-foreground hover:text-cream",
