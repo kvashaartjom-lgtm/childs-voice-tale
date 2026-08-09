@@ -130,12 +130,19 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export async function joinWaitlist(email: string): Promise<{ ok: true }> {
   if (!EMAIL_RE.test(email)) throw new Error("invalid_email");
 
-  const { supabase } = await import("./supabase");
-  const { error } = await supabase.from("waitlist").insert({ email });
+  const { supabaseUrl, supabaseAnonKey } = await import("./supabase");
+  const res = await fetch(`${supabaseUrl}/functions/v1/join-waitlist`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseAnonKey}`,
+    },
+    body: JSON.stringify({ email }),
+  });
 
-  if (error) {
-    // 23505 = unique_violation — email already registered, treat as success
-    if (error.code === "23505") return { ok: true };
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    console.error("[joinWaitlist]", res.status, body);
     throw new Error("network_error");
   }
 
