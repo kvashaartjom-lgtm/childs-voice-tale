@@ -93,7 +93,10 @@ async function fetchStoryTexts(order: OrderState, name: string, language: string
 
 export async function generateBook(order: OrderState): Promise<GeneratedBook> {
   const name = order.childName?.trim() || "Sam";
-  const language = i18n.language === "en" ? "en" : "nl";
+  // Read directly from localStorage to avoid race with root useEffect restoring language.
+  // On SSR window is undefined → falls back to i18n.language (always "nl" during SSR).
+  const stored = typeof window !== "undefined" ? localStorage.getItem("kidstory_lang") : null;
+  const language = (stored === "en" || i18n.language === "en") ? "en" : "nl";
   const isEn = language === "en";
 
   // Real story generation — falls back to mock silently on any error
