@@ -3,11 +3,24 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `You are a professional Dutch children's book author. You transform real family memories into warm, magical fairy tales in natural, literary Dutch — the kind found in a premium Dutch picture book.
+type Language = "nl" | "en";
+
+function buildSystemPrompt(language: Language): string {
+  const isNl = language === "nl";
+
+  const intro = isNl
+    ? "You are a professional Dutch children's book author. You transform real family memories into warm, magical fairy tales in natural, literary Dutch — the kind found in a premium Dutch picture book."
+    : "You are a professional English children's book author. You transform real family memories into warm, magical fairy tales in natural, literary English — the kind found in a premium English picture book.";
+
+  const langRule = isNl
+    ? "Write in natural, warm, literary Dutch (not translated; native-quality Dutch prose)."
+    : "Write in natural, warm, literary English (not translated; native-quality English prose).";
+
+  return `${intro}
 
 Rules:
 - The child mentioned in the request is the hero of the story. Use their name naturally throughout.
-- Write in natural, warm, literary Dutch (not translated; native-quality Dutch prose).
+- ${langRule}
 - The story spans exactly 10 spreads.
 - Follow the age-based length guide below for the given age bracket.
 - Keep the real emotional core of the family story; weave in magical, fairy-tale elements organically.
@@ -21,6 +34,7 @@ Age-based length guide:
 - 3-5 years: 30–60 words per spread; a simple problem and its resolution
 - 5-7 years: 60–120 words per spread; dialogue between characters
 - 7-8 years: 120–200 words per spread; develop the hero's inner world and character growth`;
+}
 
 interface SpreadResult {
   spreadNumber: number;
@@ -91,8 +105,12 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  let language: Language = "nl";
+
   try {
-    const { childName, ageBracket, storyText } = await req.json();
+    const { childName, ageBracket, storyText, language: rawLang } = await req.json();
+
+    language = rawLang === "en" ? "en" : "nl";
 
     if (!childName || !ageBracket || !storyText) {
       return new Response(
@@ -101,20 +119,21 @@ Deno.serve(async (req) => {
       );
     }
 
+    const systemPrompt = buildSystemPrompt(language);
     const userMessage =
       `Child's name: ${childName}\nAge bracket: ${ageBracket}\n\nFamily story to transform:\n${storyText}`;
 
     let spreads: SpreadResult[];
 
     try {
-      const raw = await callLLM(SYSTEM_PROMPT, userMessage);
+      const raw = await callLLM(systemPrompt, userMessage);
       spreads = parseSpreads(raw);
     } catch (firstErr) {
       // Don't retry rate limits — propagate immediately
       if (firstErr instanceof Error && firstErr.message === "rate_limit") throw firstErr;
 
       console.warn("[generate-story] first attempt failed, retrying:", firstErr);
-      const raw = await callLLM(SYSTEM_PROMPT, userMessage);
+      const raw = await callLLM(systemPrompt, userMessage);
       spreads = parseSpreads(raw);
     }
 
@@ -127,8 +146,11 @@ Deno.serve(async (req) => {
     console.error("[generate-story]", err);
     const message = err instanceof Error ? err.message : "internal_error";
     const isRateLimit = message === "rate_limit";
+    const rateLimitMsg = language === "en"
+      ? "Too many requests — please try again in a minute."
+      : "Te veel verzoeken — probeer het over een minuut opnieuw.";
     return new Response(
-      JSON.stringify({ error: isRateLimit ? "Te veel verzoeken — probeer het over een minuut opnieuw." : message }),
+      JSON.stringify({ error: isRateLimit ? rateLimitMsg : message }),
       { status: isRateLimit ? 429 : 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

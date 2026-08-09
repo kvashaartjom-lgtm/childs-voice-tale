@@ -5,6 +5,7 @@
  */
 
 import type { OrderState, IllustrationStyleId } from "./order-store";
+import i18n from "@/i18n";
 
 export interface BookSpread {
   id: string;
@@ -34,7 +35,7 @@ export function formatEuro(value: number) {
   return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(value);
 }
 
-const MOCK_TEXTS = [
+const MOCK_TEXTS_NL = [
   "Op een winderige woensdagochtend hoorde {name} een zacht getik tegen het raam. Buiten stond een lantaarn te wachten die niemand daar had gezet.",
   "«Kom je mee?» fluisterde het licht. {name} trok de laarzen aan en stapte de tuin in, waar het gras plotseling naar sterren rook.",
   "Achter de heg begon een pad van goud. Elke stap gaf een klein rinkelend geluid, alsof de grond meezong met het verhaal van de familie.",
@@ -47,12 +48,25 @@ const MOCK_TEXTS = [
   "En elke avond, als het donker werd, klonk de stem van opa weer door de kamer. Voor altijd bewaard, tussen de bladzijden van dit boek.",
 ];
 
+const MOCK_TEXTS_EN = [
+  "On a windy Wednesday morning, {name} heard a soft tapping at the window. Outside, a lantern was waiting that nobody had placed there.",
+  "«Come along?» whispered the light. {name} pulled on boots and stepped into the garden, where the grass suddenly smelled of stars.",
+  "Behind the hedge a golden path began. Every step made a small tinkling sound, as if the ground were singing the family's story.",
+  "By the old oak sat an owl wearing spectacles. «I keep all the stories of your family», he said. «But one of them I have lost.»",
+  "{name} thought of the day when grandpa told that very story. The words came back, warm and familiar, just like home.",
+  "Together they walked to the lake where the moon lay in pieces. {name} gathered the pieces and made a lamp from them for the owl.",
+  "«Stories never disappear», said the owl softly, «as long as someone keeps telling them.» His feathers gleamed gold in the moonlight.",
+  "When {name} came home again, the lantern stood still beside the bed. Inside, a small flame flickered: the story of the family.",
+  "The next morning the kitchen smelled of pancakes. «Did you have a lovely dream?» asked mum. {name} smiled and nodded very slowly.",
+  "And every evening, when darkness fell, grandpa's voice filled the room once more. Kept forever, between the pages of this book.",
+];
+
 interface StorySpread {
   spreadNumber: number;
   text: string;
 }
 
-async function fetchStoryTexts(order: OrderState, name: string): Promise<string[] | null> {
+async function fetchStoryTexts(order: OrderState, name: string, language: string): Promise<string[] | null> {
   // Only call the edge function when the user typed their story (voice transcription is future work)
   if (order.storyMode !== "type" || order.storyText.trim().length < 40) return null;
 
@@ -63,6 +77,7 @@ async function fetchStoryTexts(order: OrderState, name: string): Promise<string[
         childName: name,
         ageBracket: order.ageBracket ?? "3-5",
         storyText: order.storyText,
+        language,
       },
     });
 
@@ -78,18 +93,23 @@ async function fetchStoryTexts(order: OrderState, name: string): Promise<string[
 
 export async function generateBook(order: OrderState): Promise<GeneratedBook> {
   const name = order.childName?.trim() || "Sam";
+  const language = i18n.language === "en" ? "en" : "nl";
+  const isEn = language === "en";
 
   // Real story generation — falls back to mock silently on any error
-  const realTexts = await fetchStoryTexts(order, name);
+  const realTexts = await fetchStoryTexts(order, name, language);
 
   if (!realTexts) await delay(600);
 
+  const mockTexts = isEn ? MOCK_TEXTS_EN : MOCK_TEXTS_NL;
+  const title = isEn ? `${name} and the Golden Lantern` : `${name} en de Gouden Lantaarn`;
+
   return {
     id: `book_${Math.random().toString(36).slice(2, 9)}`,
-    title: `${name} en de Gouden Lantaarn`,
-    spreads: MOCK_TEXTS.map((mockText, index) => ({
+    title,
+    spreads: mockTexts.map((mockText, index) => ({
       id: `spread_${index + 1}`,
-      pageLabel: `Pagina ${index * 2 + 3}–${index * 2 + 4}`,
+      pageLabel: isEn ? `Page ${index * 2 + 3}–${index * 2 + 4}` : `Pagina ${index * 2 + 3}–${index * 2 + 4}`,
       imageUrl: mockIllustration(order.styleId, index),
       text: realTexts?.[index] ?? mockText.replaceAll("{name}", name),
       hasQrCode: index === 1 || index === 5 || index === 9,
