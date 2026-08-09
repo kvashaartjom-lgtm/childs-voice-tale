@@ -79,17 +79,30 @@ Order state flows through `src/lib/order-store.tsx` — a React Context (`OrderP
 
 Key types exported from `order-store.tsx`: `OrderState`, `IllustrationStyleId`, `AgeBracketId`, `ShippingAddress`, `AGE_BRACKETS`, `ILLUSTRATION_STYLES`.
 
-### API layer (all mocked)
+### API layer
 
-`src/lib/api.ts` contains stubbed async functions with fake delays. Replace function bodies with real fetch/server calls — signatures are the stable contract:
+`src/lib/api.ts` contains async functions — some mocked, some live. Signatures are the stable contract:
 
-- `generateBook(order)` → `GeneratedBook`
-- `regenerateIllustration(spreadId, variantUrl)` → updated spread
-- `cloneVoice(seconds)` → `{ voiceId }`
-- `createOrder(order)` → `CreatedOrder` (order ID + delivery date)
-- `joinWaitlist(email)` → persisted to `localStorage` under `kidstory_waitlist`
+- `generateBook(order)` → `GeneratedBook` — mocked
+- `regenerateIllustration(spreadId, variantUrl)` → updated spread — mocked
+- `cloneVoice(seconds)` → `{ voiceId }` — mocked
+- `createOrder(order)` → `CreatedOrder` (order ID + delivery date) — mocked
+- `joinWaitlist(email)` → calls `supabase/functions/join-waitlist` Edge Function via `fetch` — **live**
 
 Also exports: `BOOK_PRICE`, `formatEuro`, `STYLE_IMAGES`, `mockIllustration`, `illustrationVariants`.
+
+### Edge Functions
+
+Located in `supabase/functions/`. Deployed to project `ffgbslqxuvcvbaolxybq`.
+
+| Function | Purpose | Auth |
+|---|---|---|
+| `generate-story` | Generates book spreads via Gemini | Called by server |
+| `join-waitlist` | Inserts email into `waitlist` table | Public (anon JWT) |
+
+**Service role key rule:** `SUPABASE_SERVICE_ROLE_KEY` is only accessed via `Deno.env.get(...)` inside Edge Function code. It is never hardcoded, never imported in `src/`, and never committed to the repository. The anon key (public by design) is the only Supabase credential allowed in frontend code.
+
+The `waitlist` table has no PostgREST INSERT policy accessible to browsers — all writes go through `join-waitlist` which uses the service role key server-side.
 
 ### Reusable components
 
