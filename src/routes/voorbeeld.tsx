@@ -65,6 +65,13 @@ function PreviewPage() {
       <SiteHeader />
 
       <main className="mx-auto max-w-5xl px-5 py-12">
+        <Link
+          to="/bestellen"
+          className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-cream"
+        >
+          {t("preview.backToWizard")}
+        </Link>
+
         <header className="text-center">
           <h1 className="font-display text-3xl text-cream sm:text-4xl">{t("preview.title")}</h1>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">

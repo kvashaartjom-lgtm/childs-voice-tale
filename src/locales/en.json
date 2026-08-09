@@ -126,7 +126,7 @@
     "demoBanner": "This is a sample book",
     "demoBannerSub": "— this is what your child's story could look like.",
     "demoCta": "Create your own book",
-    "backToWizard": "Back to the wizard",
+    "backToWizard": "← Back to order",
     "orderCta": "Happy with it? Proceed to order",
     "priceNote": "Incl. VAT and free shipping in NL"
   },
@@ -178,7 +178,7 @@
     "successDelivery": "Estimated delivery:",
     "successPdf": "The PDF version is on its way to your inbox so you can start reading the story right away.",
     "successVoice": "{{name}}'s voice has been woven into the QR codes. The original recording has been deleted.",
-    "successBack": "Back to home"
+    "successBack": "Go to homepage"
   },
   "loader": {
     "messages": [

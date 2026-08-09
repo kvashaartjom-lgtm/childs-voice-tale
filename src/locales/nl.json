@@ -126,7 +126,7 @@
     "demoBanner": "Dit is een voorbeeldboek",
     "demoBannerSub": "— zo kan het verhaal van jouw kind eruitzien.",
     "demoCta": "Maak jullie eigen boek",
-    "backToWizard": "Terug naar de wizard",
+    "backToWizard": "← Terug naar bestellen",
     "orderCta": "Alles goed? Naar bestellen",
     "priceNote": "Incl. btw en gratis verzending in NL"
   },
@@ -178,7 +178,7 @@
     "successDelivery": "Verwachte levering:",
     "successPdf": "De PDF-versie komt naar je inbox, zodat je het verhaal meteen kunt voorlezen.",
     "successVoice": "De stem van {{name}} is verwerkt in de QR-codes. De originele opname is verwijderd.",
-    "successBack": "Terug naar home"
+    "successBack": "Naar startpagina"
   },
   "loader": {
     "messages": [
