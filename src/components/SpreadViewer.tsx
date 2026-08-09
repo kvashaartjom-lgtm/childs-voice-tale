@@ -17,10 +17,11 @@ import { illustrationVariants, regenerateIllustration, type BookSpread } from "@
 interface SpreadViewerProps {
   spreads: BookSpread[];
   voiceName: string;
+  voiceSkipped?: boolean;
   onUpdate: (spreadId: string, patch: Partial<BookSpread>) => void;
 }
 
-export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps) {
+export function SpreadViewer({ spreads, voiceName, voiceSkipped, onUpdate }: SpreadViewerProps) {
   const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const [editing, setEditing] = useState(false);
@@ -44,6 +45,7 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
     setVariantOpen(false);
   };
 
+  const noVoice = voiceSkipped && !voiceName?.trim();
   const qrName = voiceName?.trim() || t("spreadViewer.qrDefaultName");
 
   return (
@@ -61,13 +63,22 @@ export function SpreadViewer({ spreads, voiceName, onUpdate }: SpreadViewerProps
             {spread.hasQrCode ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="absolute right-4 top-4 flex items-center gap-2 rounded-2xl border border-gold/50 bg-background/80 px-3 py-2 text-xs text-gold backdrop-blur animate-pulse-glow">
+                  <span
+                    className={cn(
+                      "absolute right-4 top-4 flex items-center gap-2 rounded-2xl border bg-background/80 px-3 py-2 text-xs backdrop-blur",
+                      noVoice
+                        ? "border-cream/20 text-muted-foreground"
+                        : "border-gold/50 text-gold animate-pulse-glow",
+                    )}
+                  >
                     <QrCode className="size-4" />
-                    QR
+                    {noVoice ? t("spreadViewer.noVoiceBadge") : "QR"}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {t("spreadViewer.qrTooltip", { name: qrName })}
+                  {noVoice
+                    ? t("spreadViewer.noVoiceTooltip")
+                    : t("spreadViewer.qrTooltip", { name: qrName })}
                 </TooltipContent>
               </Tooltip>
             ) : null}

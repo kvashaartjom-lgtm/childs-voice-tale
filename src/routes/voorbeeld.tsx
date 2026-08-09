@@ -107,6 +107,7 @@ function PreviewPage() {
             <SpreadViewer
               spreads={order.book.spreads}
               voiceName={order.familyVoiceName}
+              voiceSkipped={order.voiceSkipped}
               onUpdate={onUpdateSpread}
             />
           )}

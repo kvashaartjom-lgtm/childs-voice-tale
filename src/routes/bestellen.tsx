@@ -51,7 +51,8 @@ function OrderWizard() {
     Boolean(order.photoDataUrl) && order.guardianConsent,
     order.storyMode === "record" ? order.storyRecordingSeconds >= 120 : order.storyText.trim().length > 40,
     order.styleId !== null || order.customStyle.trim().length > 3,
-    order.familyVoiceSeconds > 0 && order.voiceConsent && order.familyVoiceName.trim().length > 1,
+    (order.familyVoiceSeconds > 0 && order.voiceConsent && order.familyVoiceName.trim().length > 1) ||
+      order.voiceSkipped,
   ][step];
 
   const handleFile = (file: File | undefined) => {
@@ -267,6 +268,11 @@ function OrderWizard() {
           {step === 4 ? (
             <div className="space-y-6">
               <p className="text-muted-foreground">{t("wizard.voiceExplain")}</p>
+              {order.voiceSkipped && order.familyVoiceSeconds === 0 && (
+                <p className="rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold/90">
+                  {t("wizard.voiceSkipWarning")}
+                </p>
+              )}
               <div>
                 <Label htmlFor="voiceName" className="text-cream">
                   {t("wizard.voiceNameLabel")}
@@ -318,13 +324,24 @@ function OrderWizard() {
               {t("wizard.next")} <ArrowRight className="size-4" />
             </Button>
           ) : (
-            <Button
-              className="h-12 rounded-full px-7 glow-gold"
-              disabled={!canContinue}
-              onClick={handleGenerate}
-            >
-              <Sparkles className="size-4" /> {t("wizard.generate")}
-            </Button>
+            <div className="flex items-center gap-3">
+              {!order.voiceSkipped && (
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => update({ voiceSkipped: true })}
+                >
+                  {t("wizard.voiceSkip")}
+                </Button>
+              )}
+              <Button
+                className="h-12 rounded-full px-7 glow-gold"
+                disabled={!canContinue}
+                onClick={handleGenerate}
+              >
+                <Sparkles className="size-4" /> {t("wizard.generate")}
+              </Button>
+            </div>
           )}
         </div>
 

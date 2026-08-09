@@ -27,6 +27,7 @@ export interface OrderState {
   familyVoiceName: string;
   familyVoiceSeconds: number;
   voiceConsent: boolean;
+  voiceSkipped: boolean;
   book: GeneratedBook | null;
   shipping: ShippingAddress;
 }
@@ -45,6 +46,7 @@ const initialState: OrderState = {
   familyVoiceName: "",
   familyVoiceSeconds: 0,
   voiceConsent: false,
+  voiceSkipped: false,
   book: null,
   shipping: { name: "", street: "", postalCode: "", city: "", email: "" },
 };

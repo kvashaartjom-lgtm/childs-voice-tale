@@ -116,7 +116,9 @@
     "next": "Volgende",
     "generate": "Genereer voorbeeld",
     "incomplete": "Vul deze stap eerst volledig in om verder te gaan.",
-    "stepReady": "Klaar voor de volgende stap"
+    "stepReady": "Klaar voor de volgende stap",
+    "voiceSkip": "Later toevoegen",
+    "voiceSkipWarning": "Een boek zonder familiestem is als een sprookje zonder magie — je kunt de stem vóór het drukken nog toevoegen"
   },
   "preview": {
     "title": "Jullie boek is klaar om te bekijken ✨",
@@ -211,6 +213,8 @@
     "goToSpread": "Ga naar {{label}}",
     "qrTooltip": "Hier klinkt de stem van {{name}}",
     "qrDefaultName": "de familie",
+    "noVoiceBadge": "nog geen stem",
+    "noVoiceTooltip": "Nog geen familiestem — voeg vóór het drukken een opname toe",
     "dialogTitle": "Kies een nieuwe illustratie",
     "dialogSub": "We hebben drie alternatieven getoverd voor {{label}}.",
     "variantAlt": "Variant {{n}}"

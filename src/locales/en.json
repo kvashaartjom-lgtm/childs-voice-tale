@@ -116,7 +116,9 @@
     "next": "Next",
     "generate": "Generate preview",
     "incomplete": "Please complete this step before continuing.",
-    "stepReady": "Ready for the next step"
+    "stepReady": "Ready for the next step",
+    "voiceSkip": "Add later",
+    "voiceSkipWarning": "A book without a family voice is like a fairy tale without magic — you can still add a voice before printing"
   },
   "preview": {
     "title": "Your book is ready to explore ✨",
@@ -211,6 +213,8 @@
     "goToSpread": "Go to {{label}}",
     "qrTooltip": "{{name}}'s voice plays here",
     "qrDefaultName": "the family",
+    "noVoiceBadge": "no voice yet",
+    "noVoiceTooltip": "No family voice added yet — add a recording before printing",
     "dialogTitle": "Choose a new illustration",
     "dialogSub": "We've conjured three alternatives for {{label}}.",
     "variantAlt": "Variant {{n}}"
