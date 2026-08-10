@@ -104,6 +104,24 @@ Located in `supabase/functions/`. Deployed to project `ffgbslqxuvcvbaolxybq`.
 
 The `waitlist` table has no PostgREST INSERT policy accessible to browsers — all writes go through `join-waitlist` which uses the service role key server-side.
 
+## Фото ребёнка — уточнение (иллюстрации)
+
+Фото НЕ загружается в Supabase Storage. Поток: браузер → ресайз до 1024px
+через canvas → base64 в теле запроса к Edge Function `generate-character` →
+модель → ответ. Диска фото не касается.
+
+Это сознательное отклонение от правила «только presigned upload»: здесь
+storage вообще не участвует, и удалять нечего.
+
+Запрещено:
+- сохранять фото или его base64 в Storage, БД, localStorage, sessionStorage
+- логировать тело запроса к generate-character
+- включать содержимое фото в текст ошибки
+- добавлять персональные поля в таблицу book_jobs
+
+Character sheet (стилизованный рисунок) хранить можно — это то, что
+продуктовая политика прямо разрешает вместо face-embedding.
+
 ### Reusable components
 
 Located in `src/components/`:
