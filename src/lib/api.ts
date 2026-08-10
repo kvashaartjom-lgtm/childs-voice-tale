@@ -120,6 +120,47 @@ export async function generateBook(order: OrderState): Promise<GeneratedBook> {
   };
 }
 
+// Maps frontend IllustrationStyleId → prompts.ts StyleId used by the Edge Functions.
+// "realistisch" is intentionally null: realistic style + real face is disallowed by product policy.
+const STYLE_MAP: Record<IllustrationStyleId, string | null> = {
+  aquarel: "aquarel",
+  tekenfilm: "cartoon",
+  sprookjesachtig: "sprookje",
+  realistisch: null,
+};
+
+export async function generateCharacter(
+  photo: File | Blob,
+  styleId: IllustrationStyleId,
+  pageCount: number,
+): Promise<{ jobId: string; characterUrl: string | null; pageCount: number }> {
+  const mappedStyle = STYLE_MAP[styleId];
+  if (!mappedStyle) throw new Error("style_not_supported");
+
+  const { prepareChildPhoto } = await import("./photo");
+  const prepared = await prepareChildPhoto(photo as File);
+
+  const { supabase } = await import("./supabase");
+  const { data, error } = await supabase.functions.invoke("generate-character", {
+    body: { photo: prepared, styleId: mappedStyle, pageCount },
+  });
+  if (error || !data?.jobId) throw new Error(data?.error ?? "character_failed");
+  return { jobId: data.jobId, characterUrl: data.characterUrl ?? null, pageCount: data.pageCount };
+}
+
+export async function generatePage(
+  jobId: string,
+  pageIndex: number,
+  scene: string,
+): Promise<{ pageIndex: number; url: string | null }> {
+  const { supabase } = await import("./supabase");
+  const { data, error } = await supabase.functions.invoke("generate-page", {
+    body: { jobId, pageIndex, scene },
+  });
+  if (error || data?.error) throw new Error(data?.error ?? "page_failed");
+  return { pageIndex: data.pageIndex, url: data.url ?? null };
+}
+
 export async function regenerateIllustration(
   spreadId: string,
   variantUrl: string,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { QrCode, ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SpreadViewer } from "@/components/SpreadViewer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrder } from "@/lib/order-store";
-import { BOOK_PRICE, formatEuro, generateBook, type BookSpread } from "@/lib/api";
+import { BOOK_PRICE, formatEuro, generateBook, generateCharacter, generatePage, type BookSpread } from "@/lib/api";
 
 export const Route = createFileRoute("/voorbeeld")({
   head: () => ({
@@ -33,6 +33,8 @@ function PreviewPage() {
   const { order, update } = useOrder();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!order.book);
+  const [generatedImages, setGeneratedImages] = useState<Record<string, string>>({});
+  const imageJobStarted = useRef(false);
   const isDemo = !order.childName.trim();
 
   useEffect(() => {
@@ -49,6 +51,71 @@ function PreviewPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Image generation orchestration: runs once after the book text is ready,
+  // only when a real photo and styleId exist (skipped in demo mode).
+  useEffect(() => {
+    if (!order.book || !order.photoDataUrl || !order.styleId) return;
+    if (imageJobStarted.current) return;
+    imageJobStarted.current = true;
+
+    const photoUrl = order.photoDataUrl;
+    const styleId = order.styleId;
+    const spreads = order.book.spreads;
+    let cancelled = false;
+
+    (async () => {
+      let blob: Blob;
+      try {
+        blob = await fetch(photoUrl).then((r) => r.blob());
+      } catch {
+        return; // can't decode photo — keep mock images
+      }
+
+      let jobId: string;
+      try {
+        const result = await generateCharacter(blob, styleId, spreads.length);
+        if (cancelled) return;
+        jobId = result.jobId;
+        // Clear photo from context immediately — it's no longer needed.
+        update({ photoDataUrl: null, photoName: null });
+      } catch {
+        return; // character generation failed — keep mock images silently
+      }
+
+      for (let i = 0; i < spreads.length; i++) {
+        if (cancelled) break;
+        const { id: spreadId, text } = spreads[i];
+        const scene = text.slice(0, 800);
+        if (scene.length < 10) continue;
+        try {
+          const result = await generatePage(jobId, i, scene);
+          if (!cancelled && result.url) {
+            setGeneratedImages((prev) => ({ ...prev, [spreadId]: result.url! }));
+          }
+        } catch {
+          // page failed — keep mock image for this spread, allow retry via Regenerate button
+        }
+        if (!cancelled && i < spreads.length - 1) {
+          await new Promise((r) => setTimeout(r, 3000));
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order.book]);
+
+  // Merge AI-generated images over the mock fallbacks as they arrive.
+  const mergedSpreads = useMemo(
+    () =>
+      order.book?.spreads.map((s) =>
+        generatedImages[s.id] ? { ...s, imageUrl: generatedImages[s.id] } : s,
+      ) ?? [],
+    [order.book?.spreads, generatedImages],
+  );
 
   const onUpdateSpread = (spreadId: string, patch: Partial<BookSpread>) => {
     if (!order.book) return;
@@ -105,7 +172,7 @@ function PreviewPage() {
             </div>
           ) : (
             <SpreadViewer
-              spreads={order.book.spreads}
+              spreads={mergedSpreads}
               voiceName={order.familyVoiceName}
               voiceSkipped={order.voiceSkipped}
               onUpdate={onUpdateSpread}
