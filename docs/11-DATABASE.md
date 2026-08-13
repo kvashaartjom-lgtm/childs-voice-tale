@@ -6,7 +6,7 @@ families(id, owner_id, name)
 children(id, family_id, display_name, age_bracket)
 books(id, family_id, child_id, title, language, status)
 book_versions(id, book_id, version_number, status)
-book_pages(id, book_version_id, page_number, text, image_asset_id)
+book_pages(id, book_version_id, page_number, text, image_storage_key)
 generation_jobs(id, book_version_id, job_type, status, progress, retry_count, provider, provider_job_id, error_code)
 products(id, name, type, active)
 product_variants(id, product_id, format, width, height, page_count, binding, paper, active)
@@ -22,3 +22,11 @@ qr_access(id, book_version_id, audio_asset_id, token_hash, status, created_at, r
 
 ## Rules
 RLS restricts users to their own data. Service-role operations remain server-side. Secrets are never stored as plaintext application data.
+
+## Deviation: image_storage_key (Phase 0 / Step 1)
+`book_pages.image_asset_id` above is implemented as `book_pages.image_storage_key text` — a
+bucket-relative Storage object path (e.g. `pages/<uuid>/03.png`), not a foreign key to an
+`assets` table. No `assets` table or Asset entity exists. Reason: this phase addresses images
+by Storage object key only; introducing an asset subsystem was out of scope for Phase 0 / Step 1
+and is deferred until a real need for asset-level metadata (variants, checksums, CDN state)
+emerges.

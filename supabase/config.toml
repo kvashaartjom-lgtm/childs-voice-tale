@@ -1,0 +1,50 @@
+# Local Supabase CLI configuration. This file only affects the local dev
+# stack (`supabase start` / `supabase db reset`) — it is never applied to
+# the remote project (ffgbslqxuvcvbaolxybq) by the CLI.
+project_id = "childs-voice-tale"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["https://127.0.0.1:3000"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+# Phase 0 / Step 1 — local-only. Every visitor gets a real auth.uid() via
+# signInAnonymously() without registration. NOT enabled on the remote
+# project by this change (see migration report). RLS policies never grant
+# access to the `anon` role — anonymous sessions are `authenticated`.
+enable_anonymous_sign_ins = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[edge_runtime]
+enabled = true
