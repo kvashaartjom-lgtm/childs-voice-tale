@@ -1,5 +1,7 @@
 .env
 test-*.mjs
+tools/test-*.mjs
+tools/out/
 
 # Logs
 logs
