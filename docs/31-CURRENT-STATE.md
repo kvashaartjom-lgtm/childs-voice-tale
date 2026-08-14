@@ -63,4 +63,41 @@ and seeded with all three existing migration versions (`20250101000000`, `202608
 `20260813000000`) so the CLI's migration history now matches what was actually run, where
 previously no such history existed on production at all.
 
+## Phase 2b-1 — Async worker foundation (backend only, unverified against a live project)
+Migration `supabase/migrations/20260814000000_generation_worker.sql` adds a **second,
+independent** generation pipeline beside the existing prototype one — it does not touch
+`book_jobs`, `generate-character`, `generate-page`, or `src/routes/voorbeeld.tsx`'s
+browser-driven loop, which all keep running exactly as before:
+
+- New Edge Function `supabase/functions/generation-worker/` processes queued
+  `generation_jobs` rows: claims one job atomically (`claim_generation_job()`, `UPDATE ...
+  WHERE id = (SELECT ... FOR UPDATE SKIP LOCKED)`), generates each page's image via a
+  provider adapter (`supabase/functions/_shared/image-provider.ts`), writes it to a new
+  private Storage bucket (`book-pages`, keyed by `book_version_id`), and sets
+  `book_pages.image_storage_key`. Progress updates after every page. Stops after ~100s of
+  wall clock and releases its lease so a long book resumes on the next tick instead of
+  hitting the function timeout.
+- Provider selection via `IMAGE_PROVIDER` env var (AD-004): `mock` (default) produces a
+  deterministic SVG that visibly encodes the `book_version_id`/`page_number` it was called
+  with; `gemini` is a stub that throws — not configured, not exercised (Gemini's free tier
+  is quota-blocked, see `docs/33-DEFERRED.md`).
+- Scheduled via `pg_cron` (every minute) calling `pg_net.http_post` against the worker,
+  authorised with a `service_role` JWT sourced from Supabase Vault at call time — never
+  stored as plaintext in the migration. **Manual owner step still required**: the Vault
+  secret (`generation_worker_invoke_key`) must be created once via the SQL editor before any
+  cron tick can successfully call the worker — see `docs/35-GENERATION-WORKER-VERIFICATION.md`.
+- Transient failures retry up to 3 times (`retry_count`) before the job is marked `failed`;
+  permanent validation failures (e.g. no pages to generate) fail immediately without
+  retrying, per `docs/12-AI-PIPELINE.md`.
+
+**Not done yet, deliberately out of this task's scope:** nothing creates a `generation_jobs`
+row from the frontend — this task validates orchestration only. `voorbeeld.tsx` still does not
+call this pipeline; AD-009 compliance for the pipeline the user actually experiences is still
+outstanding until that wiring happens.
+
+**Verification status:** Claude has no network path to Supabase and did not run any of this
+against a real project — see `docs/35-GENERATION-WORKER-VERIFICATION.md` for the manual
+script the owner runs, and the Phase 2b-1 task report for what was checked by other means
+(static review, a TypeScript check against a stubbed Deno/supabase-js environment).
+
 Update this file after meaningful implementation changes.
