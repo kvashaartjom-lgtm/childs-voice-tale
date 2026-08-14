@@ -120,6 +120,103 @@ export async function generateBook(order: OrderState): Promise<GeneratedBook> {
   };
 }
 
+export interface PersistedBookRecord {
+  familyId: string;
+  childId: string;
+  bookId: string;
+  bookVersionId: string;
+}
+
+/**
+ * Phase 0 / Step 2a — additive only. Records the domain chain (family ->
+ * child -> book -> book_version -> book_pages) that the wizard just
+ * produced. Does NOT drive anything: illustration generation still runs
+ * entirely through the legacy book_jobs path (src/routes/voorbeeld.tsx),
+ * untouched by this function. Never throws — the existing mock/legacy
+ * prototype flow must keep working even if this write fails (e.g.
+ * anonymous sign-in hasn't completed yet).
+ *
+ * The child's photo never enters this function or any payload it sends —
+ * only childName/ageBracket metadata and the already-generated story text.
+ */
+export async function persistBookRecord(
+  order: OrderState,
+  book: GeneratedBook,
+): Promise<PersistedBookRecord | null> {
+  try {
+    const { supabase, ensureAnonymousSession } = await import("./supabase");
+
+    let userId = (await supabase.auth.getUser()).data.user?.id;
+    if (!userId) {
+      await ensureAnonymousSession();
+      userId = (await supabase.auth.getUser()).data.user?.id;
+    }
+    if (!userId) return null;
+
+    const childName = order.childName.trim();
+    const stored = typeof window !== "undefined" ? localStorage.getItem("kidstory_lang") : null;
+    const language = stored === "en" || i18n.language === "en" ? "en" : "nl";
+
+    // Reuse an existing family for a returning session rather than creating
+    // a new one each time. One family per anonymous user is fine for now.
+    const { data: existingFamily } = await supabase
+      .from("families")
+      .select("id")
+      .eq("owner_id", userId)
+      .limit(1)
+      .maybeSingle();
+
+    let familyId: string;
+    if (existingFamily?.id) {
+      familyId = existingFamily.id;
+    } else {
+      const { data: newFamily, error: familyError } = await supabase
+        .from("families")
+        .insert({ owner_id: userId, name: `Familie van ${childName}` })
+        .select("id")
+        .single();
+      if (familyError || !newFamily) throw familyError ?? new Error("family insert returned no row");
+      familyId = newFamily.id;
+    }
+
+    const { data: child, error: childError } = await supabase
+      .from("children")
+      .insert({ family_id: familyId, display_name: childName, age_bracket: order.ageBracket })
+      .select("id")
+      .single();
+    if (childError || !child) throw childError ?? new Error("child insert returned no row");
+
+    const { data: bookRow, error: bookError } = await supabase
+      .from("books")
+      .insert({ family_id: familyId, child_id: child.id, title: book.title, language, status: "generating" })
+      .select("id")
+      .single();
+    if (bookError || !bookRow) throw bookError ?? new Error("book insert returned no row");
+
+    const { data: bookVersion, error: versionError } = await supabase
+      .from("book_versions")
+      .insert({ book_id: bookRow.id, version_number: 1, status: "generating" })
+      .select("id")
+      .single();
+    if (versionError || !bookVersion) throw versionError ?? new Error("book_version insert returned no row");
+
+    const { error: pagesError } = await supabase.from("book_pages").insert(
+      book.spreads.map((spread, index) => ({
+        book_version_id: bookVersion.id,
+        page_number: index + 1,
+        text: spread.text,
+        image_storage_key: null,
+      })),
+    );
+    if (pagesError) throw pagesError;
+
+    return { familyId, childId: child.id, bookId: bookRow.id, bookVersionId: bookVersion.id };
+  } catch (err) {
+    console.error("[persistBookRecord]", err);
+    return null;
+  }
+}
+
 // Maps frontend IllustrationStyleId → prompts.ts StyleId used by the Edge Functions.
 // "realistisch" is intentionally null: realistic style + real face is disallowed by product policy.
 const STYLE_MAP: Record<IllustrationStyleId, string | null> = {

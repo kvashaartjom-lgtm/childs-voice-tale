@@ -14,7 +14,7 @@ import { StyleCard } from "@/components/StyleCard";
 import { PrivacyBadge } from "@/components/PrivacyBadge";
 import { MagicalLoader } from "@/components/MagicalLoader";
 import { AGE_BRACKETS, ILLUSTRATION_STYLES, useOrder } from "@/lib/order-store";
-import { STYLE_IMAGES, generateBook } from "@/lib/api";
+import { STYLE_IMAGES, generateBook, persistBookRecord } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/bestellen")({
@@ -65,6 +65,9 @@ function OrderWizard() {
   const handleGenerate = async () => {
     setLoading(true);
     const book = await generateBook(order);
+    // Additive domain-model write (Phase 0 / Step 2a) — best-effort,
+    // non-blocking, never gates the existing flow. See persistBookRecord.
+    void persistBookRecord(order, book);
     setTimeout(() => {
       update({ book });
       setLoading(false);

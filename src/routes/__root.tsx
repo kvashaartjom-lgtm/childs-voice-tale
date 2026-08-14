@@ -14,6 +14,7 @@ import i18n from "../i18n";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { OrderProvider } from "../lib/order-store";
+import { ensureAnonymousSession } from "../lib/supabase";
 import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
@@ -136,6 +137,13 @@ function RootComponent() {
     if (stored === "nl" || stored === "en") {
       i18n.changeLanguage(stored);
     }
+  }, []);
+
+  // Give every visitor a real Supabase session before any domain-model
+  // write happens. Silent and non-blocking: the user must never see this,
+  // and the existing prototype flow must keep working even if it fails.
+  useEffect(() => {
+    void ensureAnonymousSession();
   }, []);
 
   return (
