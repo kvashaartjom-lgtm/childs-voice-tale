@@ -10,24 +10,35 @@ what it blocks, when to return, and what signals that the time has come.
 
 ---
 
-## Paid Gemini API for image generation
+## Paid Gemini API for AI generation (story + images)
 
-**Deferred:** paid Gemini API access for image generation.
+**Deferred:** paid Gemini API access for AI generation.
 
-**Reason:** the free tier does not support image generation at all; no
-budget available right now.
+**Reason:** the free tier quota is exhausted for the whole pipeline, not
+just images. Confirmed by live testing against production:
+`generate-story` returns `546` and `generate-character` returns `429`.
+Both story text and illustration generation are currently non-functional
+on the free tier; no budget available right now.
 
-**Temporary solution:** an `IMAGE_PROVIDER=mock` adapter producing
-placeholder images (to be implemented in Step 2b — **not built yet**).
+**Temporary solution:** `generateBook()` already falls back to mock story
+text silently when `generate-story` fails — existing prototype behavior,
+not new. For images, an `IMAGE_PROVIDER=mock` adapter is planned but
+**not built yet** (Step 2b).
 
-**Blocks:** the first real paid order. A book cannot be printed without
-illustrations, so this is a hard launch blocker, not a nice-to-have.
+**Blocks:** the first real paid order — and more than originally recorded.
+A book still can't be printed without real illustrations, but on top of
+that, no book currently produced in production has real AI-generated
+story text either: every one falls back to the mock story. This is a hard
+launch blocker for the entire AI pipeline, not only illustrations.
 
 **Return by:** end of Phase 1.
 
 **Trigger:** budget becomes available, OR the first real order approaches.
 
-**Note:** set a spend cap on the API key from day one.
+**Note:** set a spend cap on the API key from day one. Mock story text is
+currently being persisted into `book_pages.text` in production (via
+`persistBookRecord`, Phase 0 / Step 2a) — those rows are placeholder
+content, not real user stories, until this quota issue is resolved.
 
 ---
 
