@@ -2,7 +2,6 @@
 test-*.mjs
 tools/test-*.mjs
 tools/out/
-tools/rls-isolation-test.mjs
 
 # Logs
 logs
