@@ -17,19 +17,30 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // No-op once a session already exists. Never throws — callers must keep
 // working even if anonymous sign-in fails (network issue, feature not
 // enabled, etc.); the existing mock/legacy prototype flow does not depend
-// on this succeeding.
+// on this succeeding. Logs loudly at every branch on purpose: a silent
+// failure here is indistinguishable from success, which is exactly how
+// this shipped broken once already — see docs/31-CURRENT-STATE.md.
 export async function ensureAnonymousSession(): Promise<void> {
   try {
+    console.info("[ensureAnonymousSession] checking for existing session…");
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    if (session) return;
-
-    const { error } = await supabase.auth.signInAnonymously();
-    if (error) {
-      console.error("[ensureAnonymousSession]", error.message);
+    if (session) {
+      console.info("[ensureAnonymousSession] existing session found, skipping sign-in", {
+        userId: session.user.id,
+      });
+      return;
     }
+
+    console.info("[ensureAnonymousSession] no session, calling signInAnonymously()…");
+    const { data, error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      console.error("[ensureAnonymousSession] signInAnonymously failed:", error.message);
+      return;
+    }
+    console.info("[ensureAnonymousSession] signed in anonymously", { userId: data.user?.id });
   } catch (err) {
-    console.error("[ensureAnonymousSession]", err);
+    console.error("[ensureAnonymousSession] unexpected error:", err);
   }
 }

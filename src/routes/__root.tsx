@@ -142,6 +142,15 @@ function RootComponent() {
   // Give every visitor a real Supabase session before any domain-model
   // write happens. Silent and non-blocking: the user must never see this,
   // and the existing prototype flow must keep working even if it fails.
+  //
+  // Must be a *static* import used from a component that's always in the
+  // initial bundle (this one) — a dynamic import() elsewhere pulls
+  // supabase.ts into its own lazily-loaded chunk that's only fetched when
+  // that call site actually runs, which is never on page load. Verified by
+  // building and inspecting the real output: with this static import, this
+  // module's code is inlined into the eagerly-loaded root chunk; without
+  // it, it lands in a separate chunk that never loads until first user
+  // interaction with a feature that dynamically imports it.
   useEffect(() => {
     void ensureAnonymousSession();
   }, []);

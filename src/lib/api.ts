@@ -143,15 +143,28 @@ export async function persistBookRecord(
   order: OrderState,
   book: GeneratedBook,
 ): Promise<PersistedBookRecord | null> {
+  // Logs and throws in one call so every step's failure is individually
+  // identifiable in the console — a silent/generic catch is how this write
+  // path shipped invisible-broken once already.
+  const fail = (step: string, error: unknown): never => {
+    throw new Error(`persistBookRecord: ${step} failed: ${error instanceof Error ? error.message : String(error)}`);
+  };
+
   try {
+    console.info("[persistBookRecord] starting…");
     const { supabase, ensureAnonymousSession } = await import("./supabase");
 
     let userId = (await supabase.auth.getUser()).data.user?.id;
     if (!userId) {
+      console.info("[persistBookRecord] no auth user yet, calling ensureAnonymousSession()…");
       await ensureAnonymousSession();
       userId = (await supabase.auth.getUser()).data.user?.id;
     }
-    if (!userId) return null;
+    if (!userId) {
+      console.warn("[persistBookRecord] no auth session, skipping domain write");
+      return null;
+    }
+    console.info("[persistBookRecord] have user", userId);
 
     const childName = order.childName.trim();
     const stored = typeof window !== "undefined" ? localStorage.getItem("kidstory_lang") : null;
@@ -159,24 +172,27 @@ export async function persistBookRecord(
 
     // Reuse an existing family for a returning session rather than creating
     // a new one each time. One family per anonymous user is fine for now.
-    const { data: existingFamily } = await supabase
+    const { data: existingFamily, error: familyLookupError } = await supabase
       .from("families")
       .select("id")
       .eq("owner_id", userId)
       .limit(1)
       .maybeSingle();
+    if (familyLookupError) throw fail("family lookup", familyLookupError);
 
     let familyId: string;
     if (existingFamily?.id) {
       familyId = existingFamily.id;
+      console.info("[persistBookRecord] reusing existing family", familyId);
     } else {
       const { data: newFamily, error: familyError } = await supabase
         .from("families")
         .insert({ owner_id: userId, name: `Familie van ${childName}` })
         .select("id")
         .single();
-      if (familyError || !newFamily) throw familyError ?? new Error("family insert returned no row");
+      if (familyError || !newFamily) throw fail("family insert", familyError ?? "no row returned");
       familyId = newFamily.id;
+      console.info("[persistBookRecord] created family", familyId);
     }
 
     const { data: child, error: childError } = await supabase
@@ -184,21 +200,21 @@ export async function persistBookRecord(
       .insert({ family_id: familyId, display_name: childName, age_bracket: order.ageBracket })
       .select("id")
       .single();
-    if (childError || !child) throw childError ?? new Error("child insert returned no row");
+    if (childError || !child) throw fail("child insert", childError ?? "no row returned");
 
     const { data: bookRow, error: bookError } = await supabase
       .from("books")
       .insert({ family_id: familyId, child_id: child.id, title: book.title, language, status: "generating" })
       .select("id")
       .single();
-    if (bookError || !bookRow) throw bookError ?? new Error("book insert returned no row");
+    if (bookError || !bookRow) throw fail("book insert", bookError ?? "no row returned");
 
     const { data: bookVersion, error: versionError } = await supabase
       .from("book_versions")
       .insert({ book_id: bookRow.id, version_number: 1, status: "generating" })
       .select("id")
       .single();
-    if (versionError || !bookVersion) throw versionError ?? new Error("book_version insert returned no row");
+    if (versionError || !bookVersion) throw fail("book_version insert", versionError ?? "no row returned");
 
     const { error: pagesError } = await supabase.from("book_pages").insert(
       book.spreads.map((spread, index) => ({
@@ -208,8 +224,9 @@ export async function persistBookRecord(
         image_storage_key: null,
       })),
     );
-    if (pagesError) throw pagesError;
+    if (pagesError) throw fail("book_pages insert", pagesError);
 
+    console.info("[persistBookRecord] done", { familyId, childId: child.id, bookId: bookRow.id });
     return { familyId, childId: child.id, bookId: bookRow.id, bookVersionId: bookVersion.id };
   } catch (err) {
     console.error("[persistBookRecord]", err);
