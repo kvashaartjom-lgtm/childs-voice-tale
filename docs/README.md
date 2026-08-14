@@ -12,3 +12,6 @@ Start with:
 
 Legal documents are engineering requirements, not legal advice.
 Provider choices remain replaceable.
+
+Consciously deferred work (temporary solution in place, explicit return
+trigger) is tracked in `33-DEFERRED.md`.
