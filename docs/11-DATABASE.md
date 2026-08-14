@@ -30,3 +30,11 @@ bucket-relative Storage object path (e.g. `pages/<uuid>/03.png`), not a foreign 
 by Storage object key only; introducing an asset subsystem was out of scope for Phase 0 / Step 1
 and is deferred until a real need for asset-level metadata (variants, checksums, CDN state)
 emerges.
+
+## Note: migration history bootstrapped manually (Phase 0 / Step 1)
+Before `20260813000000_phase0_core_domain.sql` was applied, production had no
+`supabase_migrations` schema at all — the CLI's migration bookkeeping had never been
+initialized there. It was created manually and seeded with all three migration versions that
+had actually been run against production (`20250101000000_create_waitlist`,
+`20260810000000_create_book_jobs`, `20260813000000_phase0_core_domain`), so the CLI's tracked
+history now matches reality instead of being absent.
