@@ -34,6 +34,17 @@
 
 import { createClient } from "@supabase/supabase-js";
 import crypto from "node:crypto";
+import WebSocket from "ws";
+
+// @supabase/supabase-js builds a Realtime client (which references the
+// global WebSocket constructor) as soon as createClient() runs, even though
+// this script never subscribes to any realtime channel. Node 20 has no
+// global WebSocket (it only landed, experimentally, in later Node
+// versions), so without this polyfill createClient() throws
+// "ReferenceError: WebSocket is not defined" on Node 20. Setting it
+// unconditionally keeps this script working on Node 20 without needing a
+// version check.
+globalThis.WebSocket ??= WebSocket;
 
 const STAGING_URL = process.env.STAGING_URL;
 const STAGING_ANON_KEY = process.env.STAGING_ANON_KEY;
