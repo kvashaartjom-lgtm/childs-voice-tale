@@ -258,25 +258,6 @@ $$;
 revoke execute on function public.owns_family(uuid) from public;
 grant  execute on function public.owns_family(uuid) to authenticated;
 
-create or replace function public.owns_child(p_child_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from public.children c
-    join public.families f on f.id = c.family_id
-    where c.id = p_child_id
-      and f.owner_id = (select auth.uid())
-  );
-$$;
-
-revoke execute on function public.owns_child(uuid) from public;
-grant  execute on function public.owns_child(uuid) to authenticated;
-
 create or replace function public.owns_book(p_book_id uuid)
 returns boolean
 language sql
