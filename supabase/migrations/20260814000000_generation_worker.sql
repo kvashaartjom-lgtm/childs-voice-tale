@@ -113,7 +113,15 @@ on conflict (id) do nothing;
 -- 4. SCHEDULING — pg_cron + pg_net, every minute
 -- ============================================================================
 -- pg_cron and pg_net are Supabase platform extensions, typically already
--- enabled project-wide; these statements are idempotent no-ops if so.
+-- enabled project-wide; these statements are idempotent no-ops if so. But
+-- `CREATE EXTENSION ... WITH SCHEMA x` does NOT create schema x itself —
+-- it only skips that requirement when the extension already exists by
+-- name (which is why, on a project where pg_cron is pre-installed but
+-- pg_net isn't, only the pg_net statement fails with "schema net does not
+-- exist"). Create both target schemas explicitly first so this doesn't
+-- depend on which extensions happen to already be installed.
+create schema if not exists cron;
+create schema if not exists net;
 create extension if not exists pg_cron with schema cron;
 create extension if not exists pg_net with schema net;
 
